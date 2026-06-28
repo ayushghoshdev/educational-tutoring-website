@@ -108,9 +108,9 @@ export default function RegistrationForm() {
   return (
     <div className="w-full max-w-sm space-y-4 rounded-2xl">
       <div className="space-y-2 text-center">
-        <h2 className="text-2xl font-medium tracking-tight">
+        <h1 className="text-2xl font-medium tracking-tight">
           Create Account As Student
-        </h2>
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
