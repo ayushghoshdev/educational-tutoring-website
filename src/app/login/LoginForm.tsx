@@ -1,20 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchemaWithDOB, RegisterInput } from "@/schemas/registerSchema";
+import { loginSchema, LoginInput } from "@/schemas/loginSchema";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function LoginForm() {
   const [mounted, setMounted] = useState(false);
@@ -26,17 +17,14 @@ export default function LoginForm() {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors, isSubmitting },
     reset,
-    watch,
-    setValue,
-  } = useForm<any>({
-    resolver: zodResolver(registerSchemaWithDOB) as any,
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
 
-  const onSubmit = async (data: RegisterInput) => {
+  const onSubmit = async (data: LoginInput) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     console.log("Validated Form Data Submitted Successfully:", data);
     reset();

@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchemaWithDOB, RegisterInput } from "@/schemas/registerSchema";
+import {
+  studentRegisterSchemaWithDOB,
+  StudentRegisterInput,
+} from "@/schemas/studentRegisterSchema";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +35,7 @@ export default function RegistrationForm() {
     watch,
     setValue,
   } = useForm<any>({
-    resolver: zodResolver(registerSchemaWithDOB) as any,
+    resolver: zodResolver(studentRegisterSchemaWithDOB) as any,
     mode: "onChange",
   });
 
@@ -99,7 +102,7 @@ export default function RegistrationForm() {
     setValue("education.year", undefined as any);
   }, [watchedCategory, setValue]);
 
-  const onSubmit = async (data: RegisterInput) => {
+  const onSubmit = async (data: StudentRegisterInput) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     console.log("Validated Form Data Submitted Successfully:", data);
     reset();

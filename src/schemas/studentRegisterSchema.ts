@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const registerSchema = z
+export const studentRegisterSchema = z
   .object({
     fullName: z
       .string()
@@ -109,6 +109,6 @@ export const registerSchema = z
   });
 
 // Validate the composed date (day, month, year) is a real date
-export const registerSchemaWithDOB = registerSchema;
+export const studentRegisterSchemaWithDOB = studentRegisterSchema;
 
-export type RegisterInput = z.infer<typeof registerSchemaWithDOB>;
+export type StudentRegisterInput = z.infer<typeof studentRegisterSchemaWithDOB>;
