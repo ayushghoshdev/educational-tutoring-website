@@ -13,6 +13,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import clsx from "clsx";
+import Image from "next/image";
 
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -58,8 +59,15 @@ export default function StudentSidebar() {
       </nav>
 
       <div className="p-4">
-        <div className="rounded-lg p-2">
-          <p className="font-medium">{expanded && "Full Student name"}</p>
+        <div className={`flex items-center gap-3 ${expanded ? "p-2" : "p-0"}`}>
+          <Image
+            src="https://ui-avatars.com/api/?name=Student+Name&background=0A0A0A&color=fff"
+            width="30"
+            height="30"
+            alt="SN"
+            className="rounded-full"
+          />
+          <p className="font-medium">{expanded && "Student name"}</p>
         </div>
       </div>
     </aside>
