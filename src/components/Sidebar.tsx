@@ -33,7 +33,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`${expanded ? "w-64" : "w-14"} h-[calc(100vh-32px)] bg-secondary/50 flex flex-col m-4 rounded-lg`}
+      className={`${expanded ? "w-64" : "w-14"} h-[calc(100vh-32px)] bg-secondary/50 flex flex-col m-4 rounded-lg transition-all`}
     >
       <div className="flex justify-between items-center px-3 pb-2 pt-3">
         {expanded && <p className="text-lg ml-2">Sidebar</p>}
@@ -48,32 +48,50 @@ export default function Sidebar() {
             key={href}
             href={href}
             className={clsx(
-              "flex items-center rounded-lg py-2 transition hover:bg-secondary",
-              expanded ? "justify-start gap-3 px-3" : "justify-center",
+              "flex items-center rounded-lg py-2 transition-colors hover:bg-secondary",
+              expanded ? "px-3 gap-3" : "px-2.5",
             )}
           >
-            <Icon className="h-5 w-5 shrink-0" />
-            {expanded && <span>{label}</span>}
+            <div className="flex w-5 justify-center">
+              <Icon className="h-5 w-5 shrink-0" />
+            </div>
+
+            <span
+              className={clsx(
+                "overflow-hidden whitespace-nowrap transition-all duration-300",
+                expanded ? "max-w-[150px] opacity-100" : "max-w-0 opacity-0",
+              )}
+            >
+              {label}
+            </span>
           </Link>
         ))}
       </nav>
 
       <Link href="/profile">
-        <div className="p-2">
+        <div className={expanded ? "p-2" : "p-1"}>
           <div
-            className={`cursor-pointer flex items-center gap-2 hover:bg-secondary rounded-lg transition-all ${expanded ? "p-2" : "p-0"}`}
+            className={clsx(
+              "cursor-pointer flex items-center rounded-lg hover:bg-secondary transition-all",
+              expanded ? "p-2 gap-2" : "p-2",
+            )}
           >
             <Image
               src="https://ui-avatars.com/api/?name=Full+Name&background=0A0A0A&color=fff"
-              width="40"
-              height="40"
+              width={40}
+              height={40}
               alt="FN"
-              className="rounded-full"
+              className="rounded-full shrink-0"
             />
-            <div className="flex flex-col">
-              <p className="font-medium leading-5">{expanded && "Full Name"}</p>
+            <div
+              className={clsx(
+                "overflow-hidden whitespace-nowrap transition-all duration-300",
+                expanded ? "max-w-40 opacity-100" : "max-w-0 opacity-0",
+              )}
+            >
+              <p className="font-medium leading-5">Full Name</p>
               <p className="text-sm text-muted-foreground leading-4.5">
-                {expanded && "B. Tech 1st Year"}
+                B. Tech 1st Year
               </p>
             </div>
           </div>
