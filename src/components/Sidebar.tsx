@@ -16,7 +16,7 @@ import clsx from "clsx";
 import Image from "next/image";
 
 const links = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/time-table", label: "Time Table", icon: CalendarClock },
   { href: "/assignments", label: "Assignments", icon: NotebookPen },
   { href: "/exams", label: "Exams", icon: ClipboardClock },
