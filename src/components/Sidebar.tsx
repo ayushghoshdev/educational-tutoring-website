@@ -24,7 +24,7 @@ const links = [
   { href: "/courses", label: "Courses", icon: Package },
 ];
 
-export default function StudentSidebar() {
+export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
 
   const toggleSidebar = () => {
@@ -36,7 +36,7 @@ export default function StudentSidebar() {
       className={`${expanded ? "w-64" : "w-14"} h-[calc(100vh-32px)] bg-secondary/50 flex flex-col m-4 rounded-lg`}
     >
       <div className="flex justify-between items-center px-3 pb-2 pt-3">
-        {expanded && <p className="text-lg ml-2">StudentSidebar</p>}
+        {expanded && <p className="text-lg ml-2">Sidebar</p>}
         <Button variant="ghost" size="icon" onClick={toggleSidebar}>
           <PanelLeft />
         </Button>
@@ -48,7 +48,7 @@ export default function StudentSidebar() {
             key={href}
             href={href}
             className={clsx(
-              "flex items-center rounded-lg py-2 transition hover:bg-muted",
+              "flex items-center rounded-lg py-2 transition hover:bg-secondary",
               expanded ? "justify-start gap-3 px-3" : "justify-center",
             )}
           >
@@ -58,18 +58,27 @@ export default function StudentSidebar() {
         ))}
       </nav>
 
-      <div className="p-4">
-        <div className={`flex items-center gap-3 ${expanded ? "p-2" : "p-0"}`}>
-          <Image
-            src="https://ui-avatars.com/api/?name=Student+Name&background=0A0A0A&color=fff"
-            width="30"
-            height="30"
-            alt="SN"
-            className="rounded-full"
-          />
-          <p className="font-medium">{expanded && "Student name"}</p>
+      <Link href="/profile">
+        <div className="p-2">
+          <div
+            className={`cursor-pointer flex items-center gap-2 hover:bg-secondary rounded-lg transition-all ${expanded ? "p-2" : "p-0"}`}
+          >
+            <Image
+              src="https://ui-avatars.com/api/?name=Full+Name&background=0A0A0A&color=fff"
+              width="40"
+              height="40"
+              alt="FN"
+              className="rounded-full"
+            />
+            <div className="flex flex-col">
+              <p className="font-medium leading-5">{expanded && "Full Name"}</p>
+              <p className="text-sm text-muted-foreground leading-4.5">
+                {expanded && "B. Tech 1st Year"}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </Link>
     </aside>
   );
 }
