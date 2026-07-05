@@ -33,7 +33,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`${expanded ? "w-64" : "w-14"} h-[calc(100vh-32px)] bg-secondary/50 flex flex-col m-4 rounded-lg transition-all`}
+      className={`${expanded ? "w-64" : "w-14"} h-[calc(100vh-32px)] bg-sidebar flex flex-col m-4 rounded-lg transition-all`}
     >
       <div className="flex justify-between items-center px-3 pb-2 pt-3">
         {expanded && <p className="text-lg ml-2">Sidebar</p>}
@@ -48,12 +48,12 @@ export default function Sidebar() {
             key={href}
             href={href}
             className={clsx(
-              "flex items-center rounded-lg py-2 transition-colors hover:bg-secondary",
+              "flex items-center rounded-lg py-2 transition-colors text-foreground/85 hover:text-foreground hover:bg-secondary",
               expanded ? "px-3 gap-3" : "px-2.5",
             )}
           >
             <div className="flex w-5 justify-center">
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-4.5 w-4.5 shrink-0" />
             </div>
 
             <span
