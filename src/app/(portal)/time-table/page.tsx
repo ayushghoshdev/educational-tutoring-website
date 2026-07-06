@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { DayCard } from "./DayCard";
+import { DayDetailsDialog } from "./DayDetailsDialogue";
 
 const days = [
   { day: 20, classes: 1, exams: 1, variant: "past" },
@@ -29,6 +33,12 @@ const days = [
 const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function TimeTablePage() {
+  const [selectedDay, setSelectedDay] = useState<(typeof days)[number] | null>(
+    null,
+  );
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="px-2 py-5 mr-2">
       <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
@@ -50,9 +60,18 @@ export default function TimeTablePage() {
               classes={day.classes}
               exams={day.exams}
               variant={day.variant as any}
+              onClick={() => {
+                setSelectedDay(day);
+                setDialogOpen(true);
+              }}
             />
           ))}
         </div>
+        <DayDetailsDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          day={selectedDay}
+        />
       </section>
     </div>
   );

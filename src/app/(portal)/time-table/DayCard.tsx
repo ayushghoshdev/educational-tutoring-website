@@ -5,6 +5,7 @@ type DayCardProps = {
   classes?: number;
   exams?: number;
   variant?: "past" | "current" | "normal" | "next";
+  onClick?: () => void;
 };
 
 export function DayCard({
@@ -12,11 +13,13 @@ export function DayCard({
   classes = 0,
   exams = 0,
   variant = "normal",
+  onClick,
 }: DayCardProps) {
   const isCurrent = variant === "current";
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         "h-28 rounded-lg bg-accent/65 p-3 flex flex-col transition-colors duration-200 cursor-pointer",
         isCurrent
