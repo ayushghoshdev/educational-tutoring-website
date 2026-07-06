@@ -33,9 +33,14 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`${expanded ? "w-64" : "w-14"} h-[calc(100vh-32px)] bg-sidebar flex flex-col m-4 rounded-lg transition-all`}
+      className={`${expanded ? "w-64" : "w-14"} sticky top-4 h-[calc(100vh-32px)] bg-sidebar flex flex-col m-4 rounded-lg transition-all`}
     >
-      <div className="flex justify-between items-center px-3 pb-2 pt-3">
+      <div
+        className={clsx(
+          "flex justify-between items-center px-2 pb-2 pt-2",
+          expanded ? "" : "px-3",
+        )}
+      >
         {expanded && <p className="text-lg ml-2">Sidebar</p>}
         <Button variant="ghost" size="icon" onClick={toggleSidebar}>
           <PanelLeft />
