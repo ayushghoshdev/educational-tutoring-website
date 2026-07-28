@@ -10,6 +10,7 @@ import {
   PanelLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import clsx from "clsx";
@@ -24,8 +25,22 @@ const links = [
   { href: "/courses", label: "Courses", icon: Package },
 ];
 
+const isRouteActive = (pathname: string, href: string) => {
+  if (pathname === href) return true;
+  if (pathname.startsWith(`${href}/`)) return true;
+
+  // Handle singular vs plural route variations (e.g. /assignment/my-assignment-1 matching /assignments)
+  const hrefSingular = href.endsWith("s") ? href.slice(0, -1) : href;
+  if (pathname === hrefSingular || pathname.startsWith(`${hrefSingular}/`)) {
+    return true;
+  }
+
+  return false;
+};
+
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
+  const pathname = usePathname();
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
@@ -48,36 +63,45 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 p-2 space-y-1">
-        {links.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={clsx(
-              "flex items-center rounded-lg py-2 transition-colors text-foreground/85 hover:text-foreground hover:bg-secondary",
-              expanded ? "px-3 gap-3" : "px-2.5",
-            )}
-          >
-            <div className="flex w-5 justify-center">
-              <Icon className="h-4.5 w-4.5 shrink-0" />
-            </div>
-
-            <span
+        {links.map(({ href, label, icon: Icon }) => {
+          const isActive = isRouteActive(pathname, href);
+          return (
+            <Link
+              key={href}
+              href={href}
               className={clsx(
-                "overflow-hidden whitespace-nowrap transition-all duration-300",
-                expanded ? "max-w-[150px] opacity-100" : "max-w-0 opacity-0",
+                "flex items-center rounded-lg py-2 transition-colors",
+                isActive
+                  ? "bg-secondary text-foreground"
+                  : "text-foreground/85 hover:text-foreground hover:bg-secondary",
+                expanded ? "px-3 gap-3" : "px-2.5",
               )}
             >
-              {label}
-            </span>
-          </Link>
-        ))}
+              <div className="flex w-5 justify-center">
+                <Icon className="h-4.5 w-4.5 shrink-0" />
+              </div>
+
+              <span
+                className={clsx(
+                  "overflow-hidden whitespace-nowrap transition-all duration-300",
+                  expanded ? "max-w-[150px] opacity-100" : "max-w-0 opacity-0",
+                )}
+              >
+                {label}
+              </span>
+            </Link>
+          );
+        })}
       </nav>
 
       <Link href="/profile">
         <div className={expanded ? "p-2" : "p-1"}>
           <div
             className={clsx(
-              "cursor-pointer flex items-center rounded-lg hover:bg-secondary transition-all",
+              "cursor-pointer flex items-center rounded-lg transition-all",
+              isRouteActive(pathname, "/profile")
+                ? "bg-secondary text-foreground"
+                : "hover:bg-secondary",
               expanded ? "p-2 gap-2" : "p-2",
             )}
           >
