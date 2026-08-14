@@ -160,7 +160,7 @@ export default function DashboardPage() {
               <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
               {exams.length}
             </h3>
-            <Link href="/time-table">
+            <Link href="/exams">
               <Button variant="ghost">
                 View all exams
                 <ArrowUpRight />
@@ -180,7 +180,7 @@ export default function DashboardPage() {
               <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
               {assignments.length}
             </h3>
-            <Link href="/time-table">
+            <Link href="/assignments">
               <Button variant="ghost">
                 View all assignments
                 <ArrowUpRight />
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
             {doubts.length}
           </h2>
-          <Link href="/courses">
+          <Link href="/doubts">
             <Button variant="ghost">
               View all doubts
               <ArrowUpRight />
