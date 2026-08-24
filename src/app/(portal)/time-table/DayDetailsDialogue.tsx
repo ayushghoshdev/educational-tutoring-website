@@ -43,7 +43,7 @@ export function DayDetailsDialog({ open, onOpenChange, day }: Props) {
             No classes or exams on this date.
           </div>
         ) : (
-          <div className="space-y-6 pt-2">
+          <div className="space-y-5 pt-2">
             {(day.classes ?? 0) > 0 && (
               <section className="space-y-3">
                 <h3 className="text-lg font-semibold">
