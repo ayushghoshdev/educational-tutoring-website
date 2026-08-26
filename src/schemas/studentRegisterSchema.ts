@@ -11,11 +11,6 @@ export const studentRegisterSchema = z
         /^[A-Za-zÀ-ÖØ-öø-ÿ-]+(?: +[A-Za-zÀ-ÖØ-öø-ÿ-]+)+$/,
         "Please enter your full name (first and last name separated by a space)",
       ),
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(20, "Username must be under 20 characters")
-      .optional(),
     email: z.email("Please enter a valid email address"),
     password: z
       .string()
