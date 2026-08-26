@@ -65,20 +65,6 @@ export default function LoginForm() {
           )}
         </div>
 
-        <div className="space-y-1">
-          <input
-            type="password"
-            {...register("confirmPassword")}
-            placeholder="Confirm password"
-            className="w-full px-4 py-2 rounded-lg text-sm text-foreground placeholder-muted-foreground bg-secondary transition-all duration-200"
-          />
-          {errors.confirmPassword && (
-            <p className="text-xs font-medium text-red-500 mt-1">
-              {(errors.confirmPassword as any).message}
-            </p>
-          )}
-        </div>
-
         <Button
           type="submit"
           size="lg"
