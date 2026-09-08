@@ -7,7 +7,7 @@ import {
   teacherRegisterSchemaWithDOB,
   TeacherRegisterInput,
 } from "@/schemas/teacherRegisterSchema";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -18,9 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { registerTeacher } from "@/app/actions/authActions";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function TeacherRegistrationForm() {
   const [mounted, setMounted] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -42,8 +47,6 @@ export default function TeacherRegistrationForm() {
   const watchedDay = watch("dob.day");
   const watchedMonth = watch("dob.month");
   const watchedYear = watch("dob.year");
-
-  console.log("errors.dob: ", errors.dob);
 
   const getDaysInMonth = (year?: number | string, month?: number | string) => {
     const y = Number(year) || new Date().getFullYear();
@@ -70,13 +73,21 @@ export default function TeacherRegistrationForm() {
   const watchedCategory = watch("education.category");
 
   const degreeOptions: string[] = [
+    "B. Tech",
+    "B. Sc",
+    "B. A",
+    "B. Ed",
     "M. Tech",
     "M. Com",
     "M. Sc",
     "M. A",
+    "M. Ed",
     "MBA",
     "MCA",
+    "Ph.D.",
+    "Other",
   ];
+
   useEffect(() => {
     if (watchedDay && Number(watchedDay) > maxDay) {
       setValue("dob.day", undefined as any);
@@ -89,9 +100,23 @@ export default function TeacherRegistrationForm() {
   }, [watchedCategory, setValue]);
 
   const onSubmit = async (data: TeacherRegisterInput) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Validated Form Data Submitted Successfully:", data);
-    reset();
+    setServerError(null);
+    try {
+      const res = await registerTeacher(data);
+      if (!res.success) {
+        setServerError(
+          res.error || "Registration failed. Please check your information.",
+        );
+        return;
+      }
+      reset();
+      router.push("/profile");
+      router.refresh();
+    } catch (err: any) {
+      setServerError(
+        err?.message || "An unexpected error occurred during registration.",
+      );
+    }
   };
 
   return (
@@ -101,6 +126,13 @@ export default function TeacherRegistrationForm() {
           Create Account As Teacher
         </h1>
       </div>
+
+      {serverError && (
+        <div className="flex items-center gap-2 p-3 text-xs rounded-lg bg-red-500/10 border border-red-500/20 text-red-500">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{serverError}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1">
@@ -262,7 +294,7 @@ export default function TeacherRegistrationForm() {
         </div>
 
         <div className="bg-muted rounded-xl px-2 pt-1 pb-2">
-          <p className="text-sm text-muted-foreground m-1">Degree</p>
+          <p className="text-sm text-muted-foreground m-1">Highest Degree</p>
           <div className="flex flex-col gap-2 space-y-1 outline-none border-none">
             <div>
               <Controller
@@ -304,7 +336,7 @@ export default function TeacherRegistrationForm() {
           <input
             type="text"
             {...register("degreeInstitute")}
-            placeholder="Graduated from"
+            placeholder="Graduated from (Institute name)"
             className="w-full px-4 py-2 rounded-lg text-sm text-foreground placeholder-muted-foreground bg-secondary transition-all duration-200"
           />
           {errors.degreeInstitute && (
@@ -336,13 +368,24 @@ export default function TeacherRegistrationForm() {
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
-              <LoaderCircle className="animate-spin w-5" />
+              <LoaderCircle className="animate-spin w-5 h-5" />
+              <span>Registering account...</span>
             </span>
           ) : (
             "Register"
           )}
         </Button>
       </form>
+
+      <div className="text-center text-sm text-muted-foreground pt-2">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-medium text-foreground underline hover:text-foreground/80 transition-colors"
+        >
+          Log in here
+        </Link>
+      </div>
     </div>
   );
 }

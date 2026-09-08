@@ -7,7 +7,7 @@ import {
   studentRegisterSchemaWithDOB,
   StudentRegisterInput,
 } from "@/schemas/studentRegisterSchema";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -18,9 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { registerStudent } from "@/app/actions/authActions";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegistrationForm() {
   const [mounted, setMounted] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -42,8 +47,6 @@ export default function RegistrationForm() {
   const watchedDay = watch("dob.day");
   const watchedMonth = watch("dob.month");
   const watchedYear = watch("dob.year");
-
-  console.log("errors.dob: ", errors.dob);
 
   const getDaysInMonth = (year?: number | string, month?: number | string) => {
     const y = Number(year) || new Date().getFullYear();
@@ -71,7 +74,7 @@ export default function RegistrationForm() {
 
   const subcategoryOptions: Record<string, string[]> = {
     school: ["Science", "Commerce", "Arts"],
-    undergraduate: ["B. Tech", "B. Com", "B. Sc", "B. A", "BBA", "BCA"],
+    undergraduate: ["B. Tech", "B. Com", "B. Sc", "B. A", "BBA", "MCA", "BCA"],
     postgraduate: ["M. Tech", "M. Com", "M. Sc", "M. A", "MBA", "MCA"],
   };
 
@@ -103,9 +106,23 @@ export default function RegistrationForm() {
   }, [watchedCategory, setValue]);
 
   const onSubmit = async (data: StudentRegisterInput) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Validated Form Data Submitted Successfully:", data);
-    reset();
+    setServerError(null);
+    try {
+      const res = await registerStudent(data);
+      if (!res.success) {
+        setServerError(
+          res.error || "Registration failed. Please check your information.",
+        );
+        return;
+      }
+      reset();
+      router.push("/profile");
+      router.refresh();
+    } catch (err: any) {
+      setServerError(
+        err?.message || "An unexpected error occurred during registration.",
+      );
+    }
   };
 
   return (
@@ -115,6 +132,13 @@ export default function RegistrationForm() {
           Create Account As Student
         </h1>
       </div>
+
+      {serverError && (
+        <div className="flex items-center gap-2 p-3 text-xs rounded-lg bg-red-500/10 border border-red-500/20 text-red-500">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{serverError}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1">
@@ -387,13 +411,24 @@ export default function RegistrationForm() {
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
-              <LoaderCircle className="animate-spin w-5" />
+              <LoaderCircle className="animate-spin w-5 h-5" />
+              <span>Registering account...</span>
             </span>
           ) : (
             "Register"
           )}
         </Button>
       </form>
+
+      <div className="text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-medium text-foreground underline hover:text-foreground/80 transition-colors"
+        >
+          Log in here
+        </Link>
+      </div>
     </div>
   );
 }

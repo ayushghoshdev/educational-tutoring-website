@@ -9,7 +9,7 @@ export const studentRegisterSchema = z
       .max(50, "Full name must be under 50 characters")
       .regex(
         /^[A-Za-zÀ-ÖØ-öø-ÿ-]+(?: +[A-Za-zÀ-ÖØ-öø-ÿ-]+)+$/,
-        "Please enter your full name (first and last name separated by a space)",
+        "Please enter your first and last name separated by a space",
       ),
     email: z.email("Please enter a valid email address"),
     password: z

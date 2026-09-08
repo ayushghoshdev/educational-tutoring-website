@@ -12,9 +12,10 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import Image from "next/image";
+import { getCurrentUserProfile } from "@/app/actions/authActions";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -40,7 +41,53 @@ const isRouteActive = (pathname: string, href: string) => {
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
+  const [userInfo, setUserInfo] = useState<{
+    name: string;
+    subtitle: string;
+    avatarUrl: string;
+  }>({
+    name: "User Profile",
+    subtitle: "View details",
+    avatarUrl:
+      "https://ui-avatars.com/api/?name=User&background=0A0A0A&color=fff",
+  });
+
   const pathname = usePathname();
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const { session, profile } = await getCurrentUserProfile();
+        if (session) {
+          const name = profile?.full_name || session.name || "User";
+          let subtitle = "Member";
+          if (profile?.role === "student") {
+            subtitle =
+              `${profile.education_subcategory || profile.education_category || "Student"} ${
+                profile.education_year ? `• ${profile.education_year}` : ""
+              }`.trim();
+          } else if (profile?.role === "teacher") {
+            subtitle = `${profile.education_category || "Teacher"}${
+              profile.degree_institute ? ` • ${profile.degree_institute}` : ""
+            }`.trim();
+          }
+
+          setUserInfo({
+            name,
+            subtitle,
+            avatarUrl:
+              session.image ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                name,
+              )}&background=18181b&color=ffffff&bold=true`,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load user info for sidebar:", err);
+      }
+    }
+    loadUser();
+  }, [pathname]);
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
@@ -48,7 +95,9 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`${expanded ? "w-64" : "w-14"} sticky top-4 h-[calc(100vh-32px)] bg-sidebar flex flex-col m-4 rounded-lg transition-all`}
+      className={`${
+        expanded ? "w-64" : "w-14"
+      } sticky top-4 h-[calc(100vh-32px)] bg-sidebar flex flex-col m-4 rounded-lg transition-all`}
     >
       <div
         className={clsx(
@@ -56,7 +105,9 @@ export default function Sidebar() {
           expanded ? "" : "px-3",
         )}
       >
-        {expanded && <p className="text-lg ml-2">Sidebar</p>}
+        {expanded && (
+          <p className="text-lg ml-2 font-medium tracking-tight">Portal</p>
+        )}
         <Button variant="ghost" size="icon" onClick={toggleSidebar}>
           <PanelLeft />
         </Button>
@@ -72,7 +123,7 @@ export default function Sidebar() {
               className={clsx(
                 "flex items-center rounded-lg py-2 transition-colors",
                 isActive
-                  ? "bg-secondary text-foreground"
+                  ? "bg-secondary text-foreground font-medium"
                   : "text-foreground/85 hover:text-foreground hover:bg-secondary",
                 expanded ? "px-3 gap-3" : "px-2.5",
               )}
@@ -83,7 +134,7 @@ export default function Sidebar() {
 
               <span
                 className={clsx(
-                  "overflow-hidden whitespace-nowrap transition-all duration-300",
+                  "overflow-hidden whitespace-nowrap transition-all duration-300 text-sm",
                   expanded ? "max-w-[150px] opacity-100" : "max-w-0 opacity-0",
                 )}
               >
@@ -106,10 +157,10 @@ export default function Sidebar() {
             )}
           >
             <Image
-              src="https://ui-avatars.com/api/?name=Full+Name&background=0A0A0A&color=fff"
-              width={40}
-              height={40}
-              alt="FN"
+              src={userInfo.avatarUrl}
+              width={36}
+              height={36}
+              alt={userInfo.name}
               className="rounded-full shrink-0"
             />
             <div
@@ -118,9 +169,11 @@ export default function Sidebar() {
                 expanded ? "max-w-40 opacity-100" : "max-w-0 opacity-0",
               )}
             >
-              <p className="font-medium leading-5">Full Name</p>
-              <p className="text-sm text-muted-foreground leading-4.5">
-                B. Tech 1st Year
+              <p className="font-medium text-sm leading-5 truncate">
+                {userInfo.name}
+              </p>
+              <p className="text-xs text-muted-foreground leading-4 truncate">
+                {userInfo.subtitle}
               </p>
             </div>
           </div>
