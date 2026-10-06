@@ -74,9 +74,12 @@ export default function TeacherRegistrationForm() {
 
   const degreeOptions: string[] = [
     "B. Tech",
+    "B. Com",
     "B. Sc",
     "B. A",
     "B. Ed",
+    "BBA",
+    "BCA",
     "M. Tech",
     "M. Com",
     "M. Sc",
@@ -377,7 +380,7 @@ export default function TeacherRegistrationForm() {
         </Button>
       </form>
 
-      <div className="text-center text-sm text-muted-foreground pt-2">
+      <div className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
           href="/login"

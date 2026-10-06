@@ -73,15 +73,33 @@ export default function RegistrationForm() {
   const watchedCategory = watch("education.category");
 
   const subcategoryOptions: Record<string, string[]> = {
-    school: ["Science", "Commerce", "Arts"],
-    undergraduate: ["B. Tech", "B. Com", "B. Sc", "B. A", "BBA", "MCA", "BCA"],
-    postgraduate: ["M. Tech", "M. Com", "M. Sc", "M. A", "MBA", "MCA"],
+    school: ["Science", "Commerce", "Arts", "Other"],
+    undergraduate: [
+      "B. Tech",
+      "B. Com",
+      "B. Sc",
+      "B. A",
+      "BBA",
+      "BCA",
+      "B. Ed.",
+      "Other",
+    ],
+    postgraduate: [
+      "M. Tech",
+      "M. Com",
+      "M. Sc",
+      "M. A",
+      "MBA",
+      "MCA",
+      "M. Ed.",
+      "Other",
+    ],
   };
 
   const yearOptions: Record<string, string[]> = {
-    school: ["Class 9", "Class 10", "Class 11", "Class 12"],
-    undergraduate: ["Year 1", "Year 2", "Year 3", "Year 4"],
-    postgraduate: ["Year 1", "Year 2", "Year 3", "Year 4"],
+    school: ["Class 8", "Class 9", "Class 10", "Class 11", "Class 12"],
+    undergraduate: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6"],
+    postgraduate: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6"],
   };
 
   const currentSubcategoryOptions =
