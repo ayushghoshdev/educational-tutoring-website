@@ -10,17 +10,24 @@ import {
   ConfirmSignUpCommand,
   ResendConfirmationCodeCommand,
   AttributeType,
+  DeleteUserCommand,
+  AdminDeleteUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import {
   getCognitoClient,
   getCognitoConfig,
   getSecretHash,
   generateDefaultAvatarUrl,
+  decodeJwtPayload,
 } from "@/lib/auth/cognito";
 import {
   setAuthCookies,
   clearAuthCookies,
   getFullUserProfile,
+  refreshTokensWithRefreshToken,
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_ID_TOKEN,
+  COOKIE_REFRESH_TOKEN,
 } from "@/lib/auth/server";
 import { loginSchema, LoginInput } from "@/schemas/loginSchema";
 import {
@@ -32,7 +39,6 @@ import {
   TeacherRegisterInput,
 } from "@/schemas/teacherRegisterSchema";
 import { cookies } from "next/headers";
-import { COOKIE_ACCESS_TOKEN } from "@/lib/auth/server";
 
 export async function loginUser(input: LoginInput) {
   try {
@@ -527,4 +533,125 @@ export async function signOutUser() {
 
 export async function getCurrentUserProfile() {
   return await getFullUserProfile();
+}
+
+export async function deleteUserAccount() {
+  try {
+    const cookieStore = await cookies();
+    let accessToken = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
+    const refreshToken = cookieStore.get(COOKIE_REFRESH_TOKEN)?.value;
+    const idToken = cookieStore.get(COOKIE_ID_TOKEN)?.value;
+
+    if (!accessToken && !refreshToken && !idToken) {
+      await clearAuthCookies();
+      return {
+        success: false,
+        error: "No active user session found to delete.",
+      };
+    }
+
+    // If access token is missing but refresh token is present, try refreshing
+    if (!accessToken && refreshToken) {
+      const payload = idToken ? decodeJwtPayload(idToken) : null;
+      const username = payload?.["cognito:username"] || payload?.email;
+      const refreshed = await refreshTokensWithRefreshToken(
+        refreshToken,
+        username,
+      );
+      if (refreshed?.accessToken) {
+        accessToken = refreshed.accessToken;
+      }
+    }
+
+    const client = getCognitoClient();
+    let deleted = false;
+
+    if (accessToken) {
+      try {
+        const command = new DeleteUserCommand({
+          AccessToken: accessToken,
+        });
+        await client.send(command);
+        deleted = true;
+      } catch (err: any) {
+        console.warn("DeleteUserCommand failed:", err?.message);
+        if (err?.name === "UserNotFoundException") {
+          deleted = true;
+        } else if (refreshToken) {
+          // Attempt token refresh and retry
+          const payload = idToken ? decodeJwtPayload(idToken) : null;
+          const username = payload?.["cognito:username"] || payload?.email;
+          const refreshed = await refreshTokensWithRefreshToken(
+            refreshToken,
+            username,
+          );
+          if (refreshed?.accessToken) {
+            try {
+              const retryCmd = new DeleteUserCommand({
+                AccessToken: refreshed.accessToken,
+              });
+              await client.send(retryCmd);
+              deleted = true;
+            } catch (retryErr: any) {
+              console.warn(
+                "Retry DeleteUserCommand failed:",
+                retryErr?.message,
+              );
+              if (retryErr?.name === "UserNotFoundException") {
+                deleted = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback: AdminDeleteUserCommand if DeleteUserCommand was not successful
+    if (!deleted) {
+      const { userPoolId } = getCognitoConfig();
+      if (
+        process.env.AWS_ACCESS_KEY_ID &&
+        process.env.AWS_SECRET_ACCESS_KEY &&
+        userPoolId
+      ) {
+        let username: string | undefined;
+        if (idToken) {
+          const payload = decodeJwtPayload(idToken);
+          username =
+            payload?.["cognito:username"] || payload?.sub || payload?.email;
+        }
+        if (username) {
+          try {
+            const adminCommand = new AdminDeleteUserCommand({
+              UserPoolId: userPoolId,
+              Username: username,
+            });
+            await client.send(adminCommand);
+            deleted = true;
+          } catch (adminErr: any) {
+            console.error("AdminDeleteUserCommand failed:", adminErr?.message);
+            if (adminErr?.name === "UserNotFoundException") {
+              deleted = true;
+            }
+          }
+        }
+      }
+    }
+
+    if (!deleted) {
+      return {
+        success: false,
+        error: "Failed to delete account from AWS Cognito. Please try again.",
+      };
+    }
+
+    await clearAuthCookies();
+    return { success: true };
+  } catch (error: any) {
+    console.error("Delete user account error:", error);
+    return {
+      success: false,
+      error: error?.message || "Failed to delete user account.",
+    };
+  }
 }

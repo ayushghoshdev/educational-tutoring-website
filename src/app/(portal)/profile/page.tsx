@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getCurrentUserProfile } from "@/app/actions/authActions";
 import SignOutButton from "@/components/SignOutButton";
+import DeleteAccountButton from "./DeleteAccountButton";
 import { redirect } from "next/navigation";
 import { Mail, GraduationCap, School, Building } from "lucide-react";
 
@@ -194,8 +195,9 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section className="rounded-lg bg-sidebar p-4 mt-4">
+      <section className="rounded-lg bg-sidebar p-4 mt-4 flex flex-wrap items-center gap-3">
         <SignOutButton />
+        <DeleteAccountButton />
       </section>
     </div>
   );
