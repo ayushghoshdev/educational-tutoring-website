@@ -101,7 +101,7 @@ export default function Sidebar() {
         )}
       >
         {expanded && (
-          <p className="text-lg ml-2 font-medium tracking-tight">Portal</p>
+          <p className="text-lg ml-2 font-medium tracking-tight">Sidebar</p>
         )}
         <Button variant="ghost" size="icon" onClick={toggleSidebar}>
           <PanelLeft />
@@ -148,7 +148,7 @@ export default function Sidebar() {
               isRouteActive(pathname, "/profile")
                 ? "bg-secondary text-foreground"
                 : "hover:bg-secondary",
-              expanded ? "p-2 gap-2" : "p-2",
+              expanded ? "p-2 gap-2" : "px-2 py-1",
             )}
           >
             {userInfo.avatarUrl ? (
