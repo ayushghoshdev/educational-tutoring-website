@@ -22,11 +22,7 @@ export default async function ProfilePage() {
       ? `${profile.dob_day}/${profile.dob_month}/${profile.dob_year}`
       : "Not provided");
 
-  const avatarUrl =
-    session.image ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      fullName,
-    )}&background=18181b&color=ffffff&size=200&bold=true`;
+  const avatarUrl = profile?.picture || session.image;
 
   return (
     <div className="px-2 py-5 mr-2">
@@ -39,14 +35,20 @@ export default async function ProfilePage() {
       <section className="rounded-lg bg-sidebar p-4 mt-4">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="relative">
-            <Image
-              src={avatarUrl}
-              width={80}
-              height={80}
-              alt={fullName}
-              className="rounded-full shrink-0"
-              priority
-            />
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                width={80}
+                height={80}
+                alt={fullName}
+                className="rounded-full shrink-0"
+                priority
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center shrink-0 text-2xl font-medium">
+                {fullName.charAt(0)}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2 text-center sm:text-left flex-1">

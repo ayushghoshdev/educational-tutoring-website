@@ -1,12 +1,27 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
 import {
-  upsertUserProfile,
-  getUserProfileByUserId,
-  getUserProfileByEmail,
-  UserProfile,
-} from "@/lib/db";
+  InitiateAuthCommand,
+  SignUpCommand,
+  AuthFlowType,
+  GlobalSignOutCommand,
+  AdminConfirmSignUpCommand,
+  AdminUpdateUserAttributesCommand,
+  ConfirmSignUpCommand,
+  ResendConfirmationCodeCommand,
+  AttributeType,
+} from "@aws-sdk/client-cognito-identity-provider";
+import {
+  getCognitoClient,
+  getCognitoConfig,
+  getSecretHash,
+  generateDefaultAvatarUrl,
+} from "@/lib/auth/cognito";
+import {
+  setAuthCookies,
+  clearAuthCookies,
+  getFullUserProfile,
+} from "@/lib/auth/server";
 import { loginSchema, LoginInput } from "@/schemas/loginSchema";
 import {
   studentRegisterSchemaWithDOB,
@@ -16,21 +31,8 @@ import {
   teacherRegisterSchemaWithDOB,
   TeacherRegisterInput,
 } from "@/schemas/teacherRegisterSchema";
-
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+import { cookies } from "next/headers";
+import { COOKIE_ACCESS_TOKEN } from "@/lib/auth/server";
 
 export async function loginUser(input: LoginInput) {
   try {
@@ -43,27 +45,86 @@ export async function loginUser(input: LoginInput) {
     }
 
     const { email, password } = parsed.data;
-    const response = await auth.signIn.email({
-      email,
-      password,
+    const { clientId } = getCognitoConfig();
+    const client = getCognitoClient();
+
+    const authParameters: Record<string, string> = {
+      USERNAME: email.trim(),
+      PASSWORD: password,
+    };
+
+    const secretHash = getSecretHash(email.trim());
+    if (secretHash) {
+      authParameters.SECRET_HASH = secretHash;
+    }
+
+    const command = new InitiateAuthCommand({
+      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+      ClientId: clientId,
+      AuthParameters: authParameters,
     });
 
-    if (response.error) {
+    const response = await client.send(command);
+    const authResult = response.AuthenticationResult;
+
+    if (!authResult?.AccessToken || !authResult?.IdToken) {
       return {
         success: false,
-        error: response.error.message || "Failed to login. Please check your credentials.",
+        error: "Failed to authenticate. No tokens received from Cognito.",
+      };
+    }
+
+    await setAuthCookies({
+      accessToken: authResult.AccessToken,
+      idToken: authResult.IdToken,
+      refreshToken: authResult.RefreshToken,
+    });
+
+    return {
+      success: true,
+      data: {
+        idToken: authResult.IdToken,
+      },
+    };
+  } catch (error: any) {
+    console.error("Login error:", error);
+
+    const name = error?.name;
+    const msg = error?.message || "";
+
+    if (name === "NotAuthorizedException") {
+      if (msg.includes("USER_PASSWORD_AUTH")) {
+        return {
+          success: false,
+          error:
+            "USER_PASSWORD_AUTH flow is not enabled in the Cognito App Client. Please enable ALLOW_USER_PASSWORD_AUTH in AWS Cognito console -> App client -> Authentication flows.",
+        };
+      }
+      return {
+        success: false,
+        error: "Incorrect email or password.",
+      };
+    }
+
+    if (name === "UserNotFoundException") {
+      return {
+        success: false,
+        error: "No account found with this email address.",
+      };
+    }
+
+    if (name === "UserNotConfirmedException") {
+      return {
+        success: false,
+        notConfirmed: true,
+        error:
+          "User account is not confirmed yet. Please verify your email with the confirmation code.",
       };
     }
 
     return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: any) {
-    console.error("Login error:", error);
-    return {
       success: false,
-      error: error?.message || "An unexpected error occurred during login.",
+      error: msg || "An unexpected error occurred during login.",
     };
   }
 }
@@ -79,51 +140,154 @@ export async function registerStudent(input: StudentRegisterInput) {
     }
 
     const data = parsed.data;
-    const authResult = await auth.signUp.email({
-      email: data.email,
-      password: data.password,
-      name: data.fullName,
+    const { clientId, userPoolId } = getCognitoConfig();
+    const client = getCognitoClient();
+
+    const formattedDob = `${data.dob.year}-${String(data.dob.month).padStart(
+      2,
+      "0",
+    )}-${String(data.dob.day).padStart(2, "0")}`;
+
+    const pictureUrl = generateDefaultAvatarUrl(data.fullName.trim());
+
+    const userAttributes: AttributeType[] = [
+      { Name: "name", Value: data.fullName.trim() },
+      { Name: "email", Value: data.email.trim() },
+      { Name: "birthdate", Value: formattedDob },
+      { Name: "picture", Value: pictureUrl },
+      { Name: "custom:role", Value: "student" },
+    ];
+
+    if (data.education?.category) {
+      userAttributes.push({
+        Name: "custom:s_category",
+        Value: data.education.category,
+      });
+    }
+
+    if (data.education?.subcategory) {
+      userAttributes.push({
+        Name: "custom:s_stream",
+        Value: data.education.subcategory,
+      });
+    }
+
+    if (data.education?.year) {
+      userAttributes.push({
+        Name: "custom:s_year_of_study",
+        Value: data.education.year,
+      });
+    }
+
+    const secretHash = getSecretHash(data.email.trim());
+
+    const command = new SignUpCommand({
+      ClientId: clientId,
+      Username: data.email.trim(),
+      Password: data.password,
+      UserAttributes: userAttributes,
+      ...(secretHash ? { SecretHash: secretHash } : {}),
     });
 
-    if (authResult.error) {
+    const signUpResult = await client.send(command);
+
+    // If AWS Admin credentials exist and user is unconfirmed, attempt auto-confirm
+    if (
+      !signUpResult.UserConfirmed &&
+      process.env.AWS_ACCESS_KEY_ID &&
+      process.env.AWS_SECRET_ACCESS_KEY &&
+      userPoolId
+    ) {
+      try {
+        const confirmCmd = new AdminConfirmSignUpCommand({
+          UserPoolId: userPoolId,
+          Username: data.email.trim(),
+        });
+        await client.send(confirmCmd);
+
+        // Mark email_verified as true in Cognito
+        try {
+          const verifyEmailCmd = new AdminUpdateUserAttributesCommand({
+            UserPoolId: userPoolId,
+            Username: data.email.trim(),
+            UserAttributes: [
+              {
+                Name: "email_verified",
+                Value: "true",
+              },
+            ],
+          });
+          await client.send(verifyEmailCmd);
+        } catch (verifyErr) {
+          console.warn("Failed to set email_verified:", verifyErr);
+        }
+
+        signUpResult.UserConfirmed = true;
+      } catch (confirmErr) {
+        console.warn("Auto-confirm attempt failed:", confirmErr);
+      }
+    }
+
+    // If user is confirmed, automatically log them in so they transition directly to /dashboard
+    if (signUpResult.UserConfirmed) {
+      const loginRes = await loginUser({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (loginRes.success) {
+        return {
+          success: true,
+          data: signUpResult,
+        };
+      }
+    }
+
+    // If confirmation is required by Cognito pool (and not auto-confirmed):
+    if (!signUpResult.UserConfirmed) {
       return {
         success: false,
-        error: authResult.error.message || "Failed to create student account.",
+        notConfirmed: true,
+        error:
+          "Account created! AWS Cognito requires email confirmation. Please confirm your email using the verification code sent to your inbox, or disable email verification / enable auto-confirm in your User Pool settings.",
       };
     }
 
-    const userId = (authResult.data as any)?.user?.id || (authResult.data as any)?.id || data.email;
-
-    const dobFormatted =
-      data.dob?.day && data.dob?.month && data.dob?.year
-        ? `${data.dob.day} ${monthNames[data.dob.month - 1]} ${data.dob.year}`
-        : null;
-
-    const profileData: UserProfile = {
-      user_id: String(userId),
-      email: data.email,
-      full_name: data.fullName,
-      role: "student",
-      dob_day: data.dob?.day ?? null,
-      dob_month: data.dob?.month ?? null,
-      dob_year: data.dob?.year ?? null,
-      dob_formatted: dobFormatted,
-      education_category: data.education?.category ?? null,
-      education_subcategory: data.education?.subcategory ?? null,
-      education_year: data.education?.year ?? null,
-    };
-
-    await upsertUserProfile(profileData);
-
     return {
       success: true,
-      data: authResult.data,
+      data: signUpResult,
     };
   } catch (error: any) {
     console.error("Student registration error:", error);
+
+    const name = error?.name;
+    const msg = error?.message || "";
+
+    if (name === "UsernameExistsException") {
+      return {
+        success: false,
+        error: "An account with this email already exists.",
+      };
+    }
+
+    if (name === "InvalidPasswordException") {
+      return {
+        success: false,
+        error:
+          "Password does not meet AWS Cognito password policy requirements.",
+      };
+    }
+
+    if (name === "InvalidParameterException") {
+      return {
+        success: false,
+        error: msg || "Invalid parameter provided to Cognito.",
+      };
+    }
+
     return {
       success: false,
-      error: error?.message || "An unexpected error occurred during registration.",
+      error: msg || "An unexpected error occurred during registration.",
     };
   }
 }
@@ -139,83 +303,228 @@ export async function registerTeacher(input: TeacherRegisterInput) {
     }
 
     const data = parsed.data;
-    const authResult = await auth.signUp.email({
-      email: data.email,
-      password: data.password,
-      name: data.fullName,
+    const { clientId, userPoolId } = getCognitoConfig();
+    const client = getCognitoClient();
+
+    const formattedDob = `${data.dob.year}-${String(data.dob.month).padStart(
+      2,
+      "0",
+    )}-${String(data.dob.day).padStart(2, "0")}`;
+
+    const pictureUrl = generateDefaultAvatarUrl(data.fullName.trim());
+
+    const userAttributes: AttributeType[] = [
+      { Name: "name", Value: data.fullName.trim() },
+      { Name: "email", Value: data.email.trim() },
+      { Name: "birthdate", Value: formattedDob },
+      { Name: "picture", Value: pictureUrl },
+      { Name: "custom:role", Value: "teacher" },
+      {
+        Name: "custom:t_highest_degree",
+        Value: data.education?.category || "Degree",
+      },
+      {
+        Name: "custom:t_graduated_from",
+        Value: data.degreeInstitute.trim(),
+      },
+      {
+        Name: "custom:t_current_institute",
+        Value: data.affiliatedInstitute.trim(),
+      },
+    ];
+
+    const secretHash = getSecretHash(data.email.trim());
+
+    const command = new SignUpCommand({
+      ClientId: clientId,
+      Username: data.email.trim(),
+      Password: data.password,
+      UserAttributes: userAttributes,
+      ...(secretHash ? { SecretHash: secretHash } : {}),
     });
 
-    if (authResult.error) {
+    const signUpResult = await client.send(command);
+
+    // If AWS Admin credentials exist and user is unconfirmed, attempt auto-confirm
+    if (
+      !signUpResult.UserConfirmed &&
+      process.env.AWS_ACCESS_KEY_ID &&
+      process.env.AWS_SECRET_ACCESS_KEY &&
+      userPoolId
+    ) {
+      try {
+        const confirmCmd = new AdminConfirmSignUpCommand({
+          UserPoolId: userPoolId,
+          Username: data.email.trim(),
+        });
+        await client.send(confirmCmd);
+
+        // Mark email_verified as true in Cognito
+        try {
+          const verifyEmailCmd = new AdminUpdateUserAttributesCommand({
+            UserPoolId: userPoolId,
+            Username: data.email.trim(),
+            UserAttributes: [
+              {
+                Name: "email_verified",
+                Value: "true",
+              },
+            ],
+          });
+          await client.send(verifyEmailCmd);
+        } catch (verifyErr) {
+          console.warn("Failed to set email_verified:", verifyErr);
+        }
+
+        signUpResult.UserConfirmed = true;
+      } catch (confirmErr) {
+        console.warn("Auto-confirm attempt failed:", confirmErr);
+      }
+    }
+
+    // If user is confirmed, automatically log them in so they transition directly to /dashboard
+    if (signUpResult.UserConfirmed) {
+      const loginRes = await loginUser({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (loginRes.success) {
+        return {
+          success: true,
+          data: signUpResult,
+        };
+      }
+    }
+
+    // If confirmation is required by Cognito pool (and not auto-confirmed):
+    if (!signUpResult.UserConfirmed) {
       return {
         success: false,
-        error: authResult.error.message || "Failed to create teacher account.",
+        notConfirmed: true,
+        error:
+          "Account created! AWS Cognito requires email confirmation. Please confirm your email using the verification code sent to your inbox, or disable email verification / enable auto-confirm in your User Pool settings.",
       };
     }
 
-    const userId = (authResult.data as any)?.user?.id || (authResult.data as any)?.id || data.email;
-
-    const dobFormatted =
-      data.dob?.day && data.dob?.month && data.dob?.year
-        ? `${data.dob.day} ${monthNames[data.dob.month - 1]} ${data.dob.year}`
-        : null;
-
-    const profileData: UserProfile = {
-      user_id: String(userId),
-      email: data.email,
-      full_name: data.fullName,
-      role: "teacher",
-      dob_day: data.dob?.day ?? null,
-      dob_month: data.dob?.month ?? null,
-      dob_year: data.dob?.year ?? null,
-      dob_formatted: dobFormatted,
-      education_category: data.education?.category ?? null,
-      degree_institute: data.degreeInstitute,
-      affiliated_institute: data.affiliatedInstitute,
-    };
-
-    await upsertUserProfile(profileData);
-
     return {
       success: true,
-      data: authResult.data,
+      data: signUpResult,
     };
   } catch (error: any) {
     console.error("Teacher registration error:", error);
+
+    const name = error?.name;
+    const msg = error?.message || "";
+
+    if (name === "UsernameExistsException") {
+      return {
+        success: false,
+        error: "An account with this email already exists.",
+      };
+    }
+
+    if (name === "InvalidPasswordException") {
+      return {
+        success: false,
+        error:
+          "Password does not meet AWS Cognito password policy requirements.",
+      };
+    }
+
+    if (name === "InvalidParameterException") {
+      return {
+        success: false,
+        error: msg || "Invalid parameter provided to Cognito.",
+      };
+    }
+
     return {
       success: false,
-      error: error?.message || "An unexpected error occurred during registration.",
+      error: msg || "An unexpected error occurred during registration.",
+    };
+  }
+}
+
+export async function confirmSignUpUser({
+  email,
+  code,
+}: {
+  email: string;
+  code: string;
+}) {
+  try {
+    const { clientId } = getCognitoConfig();
+    const client = getCognitoClient();
+    const secretHash = getSecretHash(email.trim());
+
+    const command = new ConfirmSignUpCommand({
+      ClientId: clientId,
+      Username: email.trim(),
+      ConfirmationCode: code.trim(),
+      ...(secretHash ? { SecretHash: secretHash } : {}),
+    });
+
+    await client.send(command);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Confirm sign-up error:", error);
+    return {
+      success: false,
+      error: error?.message || "Failed to confirm sign up.",
+    };
+  }
+}
+
+export async function resendConfirmationCode(email: string) {
+  try {
+    const { clientId } = getCognitoConfig();
+    const client = getCognitoClient();
+    const secretHash = getSecretHash(email.trim());
+
+    const command = new ResendConfirmationCodeCommand({
+      ClientId: clientId,
+      Username: email.trim(),
+      ...(secretHash ? { SecretHash: secretHash } : {}),
+    });
+
+    await client.send(command);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Resend confirmation code error:", error);
+    return {
+      success: false,
+      error: error?.message || "Failed to resend confirmation code.",
     };
   }
 }
 
 export async function signOutUser() {
   try {
-    await auth.signOut();
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
+
+    if (accessToken) {
+      try {
+        const client = getCognitoClient();
+        const command = new GlobalSignOutCommand({
+          AccessToken: accessToken,
+        });
+        await client.send(command);
+      } catch (err: any) {
+        console.warn("Global sign-out warning:", err?.message);
+      }
+    }
+
+    await clearAuthCookies();
     return { success: true };
   } catch (error: any) {
     console.error("Sign out error:", error);
-    return { success: false, error: error?.message || "Failed to sign out" };
+    await clearAuthCookies();
+    return { success: true };
   }
 }
 
 export async function getCurrentUserProfile() {
-  try {
-    const { data: session } = await auth.getSession();
-    if (!session?.user) {
-      return { session: null, profile: null };
-    }
-
-    let profile = await getUserProfileByUserId(session.user.id);
-    if (!profile && session.user.email) {
-      profile = await getUserProfileByEmail(session.user.email);
-    }
-
-    return {
-      session: session.user,
-      profile,
-    };
-  } catch (error) {
-    console.error("Error fetching current user profile:", error);
-    return { session: null, profile: null };
-  }
+  return await getFullUserProfile();
 }

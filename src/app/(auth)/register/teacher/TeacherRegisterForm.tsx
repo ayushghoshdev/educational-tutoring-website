@@ -113,7 +113,7 @@ export default function TeacherRegistrationForm() {
         return;
       }
       reset();
-      router.push("/profile");
+      router.push("/dashboard");
       router.refresh();
     } catch (err: any) {
       setServerError(

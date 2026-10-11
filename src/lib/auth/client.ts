@@ -1,5 +1,6 @@
 "use client";
 
-import { createAuthClient } from "@neondatabase/auth/next";
-
-export const authClient = createAuthClient();
+// Client-side authentication helpers if needed in the future
+export const authClient = {
+  // Client can trigger Server Actions from "@/app/actions/authActions"
+};

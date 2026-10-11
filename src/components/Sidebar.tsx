@@ -48,8 +48,7 @@ export default function Sidebar() {
   }>({
     name: "User Profile",
     subtitle: "View details",
-    avatarUrl:
-      "https://ui-avatars.com/api/?name=User&background=0A0A0A&color=fff",
+    avatarUrl: "",
   });
 
   const pathname = usePathname();
@@ -75,11 +74,7 @@ export default function Sidebar() {
           setUserInfo({
             name,
             subtitle,
-            avatarUrl:
-              session.image ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                name,
-              )}&background=18181b&color=ffffff&bold=true`,
+            avatarUrl: profile?.picture || session.image || "",
           });
         }
       } catch (err) {
@@ -156,13 +151,19 @@ export default function Sidebar() {
               expanded ? "p-2 gap-2" : "p-2",
             )}
           >
-            <Image
-              src={userInfo.avatarUrl}
-              width={36}
-              height={36}
-              alt={userInfo.name}
-              className="rounded-full shrink-0"
-            />
+            {userInfo.avatarUrl ? (
+              <Image
+                src={userInfo.avatarUrl}
+                width={36}
+                height={36}
+                alt={userInfo.name}
+                className="rounded-full shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center shrink-0 text-xs font-medium">
+                {userInfo.name.charAt(0)}
+              </div>
+            )}
             <div
               className={clsx(
                 "overflow-hidden whitespace-nowrap transition-all duration-300",
