@@ -164,6 +164,5 @@ export function attributesListToMap(
 export function generateDefaultAvatarUrl(name: string): string {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
     name,
-  )}&background=18181b&color=ffffff&size=200&bold=true`;
+  )}&background=0A0A0A&color=ffffff&size=200&bold=true`;
 }
-

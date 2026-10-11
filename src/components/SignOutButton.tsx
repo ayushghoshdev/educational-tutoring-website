@@ -25,7 +25,7 @@ export default function SignOutButton({ className }: { className?: string }) {
 
   return (
     <Button
-      variant="destructive"
+      variant="secondary"
       onClick={handleSignOut}
       disabled={loading}
       className={`flex items-center gap-2 cursor-pointer ${className || ""}`}

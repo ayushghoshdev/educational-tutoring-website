@@ -3,7 +3,6 @@ import { getCurrentUserProfile } from "@/app/actions/authActions";
 import SignOutButton from "@/components/SignOutButton";
 import DeleteAccountButton from "./DeleteAccountButton";
 import { redirect } from "next/navigation";
-import { Mail, GraduationCap, School, Building } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -34,13 +33,13 @@ export default async function ProfilePage() {
       </div>
 
       <section className="rounded-lg bg-sidebar p-4 mt-4">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
           <div className="relative">
             {avatarUrl ? (
               <Image
                 src={avatarUrl}
-                width={80}
-                height={80}
+                width={50}
+                height={50}
                 alt={fullName}
                 className="rounded-full shrink-0"
                 priority
@@ -52,7 +51,7 @@ export default async function ProfilePage() {
             )}
           </div>
 
-          <div className="space-y-2 text-center sm:text-left flex-1">
+          <div className="text-center sm:text-left flex-1">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <h2 className="text-2xl font-medium tracking-tight">
                 {fullName}
@@ -67,10 +66,6 @@ export default async function ProfilePage() {
                 {role}
               </span>
             </div>
-
-            <p className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-1.5 -mt-1">
-              <span>{email}</span>
-            </p>
 
             <p className="text-xs text-muted-foreground/90 font-medium">
               {role === "student" ? (
@@ -93,8 +88,8 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div className="bg-card rounded-2xl p-6 space-y-4">
+      <section className="rounded-lg bg-sidebar mt-4">
+        <div className="p-6 space-y-3">
           <div className="flex items-center gap-6">
             <h3 className="font-medium text-base">Personal Information</h3>
           </div>
@@ -124,7 +119,7 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl p-6 space-y-4">
+        <div className="px-6 pb-6 space-y-3">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-base">
               {role === "teacher"
