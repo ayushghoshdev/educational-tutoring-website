@@ -26,41 +26,50 @@ export async function setAuthCookies(tokens: {
   idToken: string;
   refreshToken?: string;
 }) {
-  const cookieStore = await cookies();
-  const isProd = process.env.NODE_ENV === "production";
+  try {
+    const cookieStore = await cookies();
+    const isProd = process.env.NODE_ENV === "production";
 
-  cookieStore.set(COOKIE_ACCESS_TOKEN, tokens.accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    path: "/",
-    maxAge: COOKIE_MAX_AGE,
-  });
-
-  cookieStore.set(COOKIE_ID_TOKEN, tokens.idToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    path: "/",
-    maxAge: COOKIE_MAX_AGE,
-  });
-
-  if (tokens.refreshToken) {
-    cookieStore.set(COOKIE_REFRESH_TOKEN, tokens.refreshToken, {
+    cookieStore.set(COOKIE_ACCESS_TOKEN, tokens.accessToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: "lax",
       path: "/",
       maxAge: COOKIE_MAX_AGE,
     });
+
+    cookieStore.set(COOKIE_ID_TOKEN, tokens.idToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: "lax",
+      path: "/",
+      maxAge: COOKIE_MAX_AGE,
+    });
+
+    if (tokens.refreshToken) {
+      cookieStore.set(COOKIE_REFRESH_TOKEN, tokens.refreshToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: "lax",
+        path: "/",
+        maxAge: COOKIE_MAX_AGE,
+      });
+    }
+  } catch {
+    // In Server Components or Layouts during render, Next.js does not allow modifying cookies.
+    // Cookies will be set via Server Actions or Route Handlers.
   }
 }
 
 export async function clearAuthCookies() {
-  const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_ACCESS_TOKEN);
-  cookieStore.delete(COOKIE_ID_TOKEN);
-  cookieStore.delete(COOKIE_REFRESH_TOKEN);
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete(COOKIE_ACCESS_TOKEN);
+    cookieStore.delete(COOKIE_ID_TOKEN);
+    cookieStore.delete(COOKIE_REFRESH_TOKEN);
+  } catch {
+    // In Server Components or Layouts during render, Next.js does not allow modifying cookies.
+  }
 }
 
 export async function refreshTokensWithRefreshToken(

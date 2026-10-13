@@ -12,10 +12,11 @@ import ClassCard from "./ClassCard";
 import Link from "next/link";
 import ExamCard from "./ExamCard";
 import AssignmentCard from "./AssignmentCard";
-import { title } from "process";
 import CourseCard from "./CourseCard";
 import DoubtCard from "./DoubtCard";
+import { getCurrentUserProfile } from "@/app/actions/authActions";
 
+export const dynamic = "force-dynamic";
 const classes = [
   {
     id: 1,
@@ -110,11 +111,24 @@ const doubts = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const { session, profile } = await getCurrentUserProfile();
+  const fullName =
+    profile?.full_name?.trim() ||
+    (session?.name && session.name !== "User" ? session.name.trim() : "");
+
   return (
     <div className="px-2 py-5 mr-2">
       <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
-        Welcome, <span className="text-foreground/90">Full Name</span>
+        {fullName ? (
+          <>
+            Hello, <span className="text-foreground/90">{fullName}</span>
+          </>
+        ) : (
+          <>
+            Your <span className="text-foreground/90">dashboard</span>
+          </>
+        )}
       </h1>
 
       <section className="bg-sidebar rounded-lg px-4 py-2 mt-4">
