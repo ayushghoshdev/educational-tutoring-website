@@ -11,6 +11,7 @@ type DayData = {
   classes?: number;
   exams?: number;
   variant?: string;
+  date?: Date;
 };
 
 type Props = {
@@ -28,10 +29,18 @@ export function DayDetailsDialog({ open, onOpenChange, day }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg ring-0! [&_button:focus]:ring-0! [&_button:focus]:ring-offset-0!">
         <DialogHeader>
-          <DialogTitle className="text-left font-medium">
-            {day.day} July 2026{" "}
+          <DialogTitle className="text-left font-medium flex items-center gap-2">
+            <span>
+              {day.date
+                ? day.date.toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : `${day.day} July 2026`}
+            </span>
             {day.variant === "current" && (
-              <span className="rounded-full text-sm bg-muted px-2 py-1">
+              <span className="rounded-full text-xs bg-primary/20 text-primary px-2.5 py-0.5">
                 Today
               </span>
             )}
@@ -57,7 +66,7 @@ export function DayDetailsDialog({ open, onOpenChange, day }: Props) {
                 {Array.from({ length: day.classes ?? 0 }).map((_, i) => (
                   <div
                     key={i}
-                    className="cursor-pointer rounded-lg bg-accent/65 hover:bg-accent transition-all p-4"
+                    className="cursor-pointer rounded-lg bg-accent/65 hover:bg-accent transition-all px-3 py-2"
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -76,7 +85,9 @@ export function DayDetailsDialog({ open, onOpenChange, day }: Props) {
                         </div>
                       </div>
 
-                      <span className="text-sm font-medium">{9 + i}:00 AM</span>
+                      <span className="text-sm self-center font-medium">
+                        {9 + i}:00 AM
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -96,7 +107,7 @@ export function DayDetailsDialog({ open, onOpenChange, day }: Props) {
                 {Array.from({ length: day.exams ?? 0 }).map((_, i) => (
                   <div
                     key={i}
-                    className="cursor-pointer rounded-lg bg-accent/65 hover:bg-accent transition-all p-4"
+                    className="cursor-pointer rounded-lg bg-accent/65 hover:bg-accent transition-all px-3 py-2"
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -115,7 +126,7 @@ export function DayDetailsDialog({ open, onOpenChange, day }: Props) {
                         </div>
                       </div>
 
-                      <span className="text-sm font-medium">
+                      <span className="text-sm self-center font-medium">
                         {12 + i}:30 PM
                       </span>
                     </div>
