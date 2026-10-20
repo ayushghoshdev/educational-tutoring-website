@@ -31,5 +31,6 @@ export interface AuthSessionUser {
 
 export interface AuthSession {
   user: AuthSessionUser | null;
+  expired?: boolean;
 }
 

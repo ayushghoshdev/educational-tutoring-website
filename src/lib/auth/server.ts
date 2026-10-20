@@ -113,8 +113,19 @@ export async function refreshTokensWithRefreshToken(
     }
 
     return null;
-  } catch (error) {
-    console.error("Failed to refresh token:", error);
+  } catch (error: any) {
+    const isExpiredOrInvalid =
+      error?.name === "NotAuthorizedException" ||
+      error?.__type === "NotAuthorizedException" ||
+      error?.name === "UserNotFoundException" ||
+      error?.message?.toLowerCase().includes("refresh token has expired") ||
+      error?.message?.toLowerCase().includes("invalid refresh token");
+
+    if (isExpiredOrInvalid) {
+      console.warn("Session refresh token expired or invalid:", error?.message);
+    } else {
+      console.error("Failed to refresh token:", error);
+    }
     return null;
   }
 }
@@ -144,16 +155,16 @@ export async function getSession(): Promise<AuthSession> {
           payload = decodeJwtPayload(idToken);
         } else {
           await clearAuthCookies();
-          return { user: null };
+          return { user: null, expired: true };
         }
       } else {
         await clearAuthCookies();
-        return { user: null };
+        return { user: null, expired: true };
       }
     }
 
     if (!payload) {
-      return { user: null };
+      return { user: null, expired: true };
     }
 
     const name = payload.name || "User";
@@ -169,7 +180,18 @@ export async function getSession(): Promise<AuthSession> {
     };
 
     return { user };
-  } catch (error) {
+  } catch (error: any) {
+    const isExpiredOrInvalid =
+      error?.name === "NotAuthorizedException" ||
+      error?.__type === "NotAuthorizedException" ||
+      error?.message?.toLowerCase().includes("refresh token has expired") ||
+      error?.message?.toLowerCase().includes("invalid refresh token");
+
+    if (isExpiredOrInvalid) {
+      console.warn("Cognito session expired or invalid:", error?.message);
+      return { user: null, expired: true };
+    }
+
     console.error("Error retrieving Cognito session:", error);
     return { user: null };
   }
@@ -178,6 +200,7 @@ export async function getSession(): Promise<AuthSession> {
 export async function getFullUserProfile(): Promise<{
   session: AuthSessionUser | null;
   profile: UserProfile | null;
+  expired?: boolean;
 }> {
   try {
     const cookieStore = await cookies();
@@ -205,16 +228,16 @@ export async function getFullUserProfile(): Promise<{
           payload = decodeJwtPayload(idToken);
         } else {
           await clearAuthCookies();
-          return { session: null, profile: null };
+          return { session: null, profile: null, expired: true };
         }
       } else {
         await clearAuthCookies();
-        return { session: null, profile: null };
+        return { session: null, profile: null, expired: true };
       }
     }
 
     if (!payload) {
-      return { session: null, profile: null };
+      return { session: null, profile: null, expired: true };
     }
 
     const userId = payload.sub || payload["cognito:username"] || payload.email;
@@ -279,7 +302,21 @@ export async function getFullUserProfile(): Promise<{
       session: sessionUser,
       profile,
     };
-  } catch (error) {
+  } catch (error: any) {
+    const isExpiredOrInvalid =
+      error?.name === "NotAuthorizedException" ||
+      error?.__type === "NotAuthorizedException" ||
+      error?.message?.toLowerCase().includes("refresh token has expired") ||
+      error?.message?.toLowerCase().includes("invalid refresh token");
+
+    if (isExpiredOrInvalid) {
+      console.warn(
+        "Session expired or invalid in getFullUserProfile:",
+        error?.message,
+      );
+      return { session: null, profile: null, expired: true };
+    }
+
     console.error("Error retrieving user profile from Cognito:", error);
     return { session: null, profile: null };
   }
@@ -289,7 +326,11 @@ export async function getFullUserProfile(): Promise<{
 export const auth = {
   getSession: async () => {
     const session = await getSession();
-    return { data: session.user ? session : null };
+    return {
+      data: session.user ? session : null,
+      session,
+      expired: !!session.expired,
+    };
   },
   signOut: async () => {
     await clearAuthCookies();

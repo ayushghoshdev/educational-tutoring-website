@@ -10,9 +10,12 @@ export default async function PortalLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { data: session } = await auth.getSession();
+  const { data: session, expired } = await auth.getSession();
 
   if (!session?.user) {
+    if (expired) {
+      redirect("/login?expired=true");
+    }
     redirect("/login");
   }
 

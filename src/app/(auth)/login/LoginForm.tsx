@@ -6,18 +6,29 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginInput } from "@/schemas/loginSchema";
 import { LoaderCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { loginUser } from "@/app/actions/authActions";
+import { loginUser, clearExpiredSession } from "@/app/actions/authActions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
-export default function LoginForm() {
+interface LoginFormProps {
+  sessionExpired?: boolean;
+}
+
+export default function LoginForm({ sessionExpired = false }: LoginFormProps) {
   const [mounted, setMounted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (sessionExpired) {
+      toast("Your session has expired. Please Log in again.", {
+        id: "session-expired",
+      });
+      clearExpiredSession().catch(() => {});
+    }
+  }, [sessionExpired]);
 
   const {
     register,

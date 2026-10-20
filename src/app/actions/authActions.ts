@@ -531,6 +531,11 @@ export async function signOutUser() {
   }
 }
 
+export async function clearExpiredSession() {
+  await clearAuthCookies();
+  return { success: true };
+}
+
 export async function getCurrentUserProfile() {
   return await getFullUserProfile();
 }

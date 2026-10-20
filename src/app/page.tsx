@@ -6,9 +6,13 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 const HomePage = async () => {
-  const { data: session } = await auth.getSession();
+  const { data: session, expired } = await auth.getSession();
   if (session?.user) {
     redirect("/dashboard");
+  }
+
+  if (expired) {
+    redirect("/login?expired=true");
   }
 
   return (
