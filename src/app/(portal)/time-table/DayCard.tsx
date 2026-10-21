@@ -34,7 +34,7 @@ export function DayCard({
       className={cn(
         "group relative aspect-square w-full rounded-xl p-2.5 pt-1 flex flex-col justify-between transition-all duration-200 cursor-pointer select-none text-left overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         isCurrent
-          ? "bg-primary text-primary-foreground border-primary shadow-md hover:bg-primary/90"
+          ? "bg-primary text-primary-foreground hover:bg-primary/90"
           : isOtherMonth
             ? "bg-accent/20 opacity-40 hover:opacity-75 hover:bg-accent/40"
             : "bg-card/75 hover:bg-accent/60",

@@ -152,7 +152,7 @@ export default function RegistrationForm() {
       </div>
 
       {serverError && (
-        <div className="flex items-center gap-2 p-3 text-xs rounded-lg bg-red-500/10 border border-red-500/20 text-red-500">
+        <div className="flex items-center gap-2 p-3 text-xs rounded-lg bg-red-500/10 text-red-500">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{serverError}</span>
         </div>
