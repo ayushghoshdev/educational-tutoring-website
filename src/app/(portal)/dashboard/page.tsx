@@ -30,7 +30,7 @@ const classes = [
     name: "A really long class name",
     teacher: "Teacher name",
     time: "12:30 PM",
-    mode: "Online",
+    mode: "Online, Offline",
   },
   {
     id: 3,
@@ -102,12 +102,14 @@ const doubts = [
     title: "Doubt title",
     teacher: "Teacher name",
     askedTime: "10 hours ago",
+    status: "resolved",
   },
   {
     id: 2,
     title: "Doubt title",
     teacher: "Teacher name",
     askedTime: "2 days ago",
+    status: "unresolved",
   },
 ];
 

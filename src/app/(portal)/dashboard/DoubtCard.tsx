@@ -1,16 +1,22 @@
 import Image from "next/image";
+import { Check, X } from "lucide-react";
 
-type ClassCardProps = {
+type DoubtCardProps = {
   title: string;
   teacher: string;
   askedTime: string;
+  status?: "resolved" | "unresolved" | string;
 };
 
 export default function DoubtCard({
   title,
   teacher,
   askedTime,
-}: ClassCardProps) {
+  status,
+}: DoubtCardProps) {
+  const isResolved = status?.toLowerCase() === "resolved";
+  const isUnresolved = status?.toLowerCase() === "unresolved";
+
   return (
     <div className="flex-1 min-w-0 cursor-pointer rounded-lg bg-accent/65 hover:bg-accent w-full px-3 py-2 transition-all">
       <p className="text-lg truncate leading-6">{title}</p>
@@ -27,6 +33,24 @@ export default function DoubtCard({
       </div>
       <div className="flex items-center gap-2 mt-1">
         <p>Asked {askedTime}</p>
+        {status && (
+          <>
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span
+              className={`inline-flex items-center gap-1 text-sm ${
+                isResolved
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : isUnresolved
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {isResolved && <Check className="w-3.5 h-3.5" />}
+              {isUnresolved && <X className="w-3.5 h-3.5" />}
+              <span className="capitalize">{status}</span>
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
