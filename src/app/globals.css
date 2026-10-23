@@ -98,3 +98,35 @@ select:-webkit-autofill {
   caret-color: white !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Global sleek themed scrollbar for all elements */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.32 0 0) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.32 0 0);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.45 0 0);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+
