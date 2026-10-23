@@ -63,7 +63,7 @@ export function NewDoubtDialog({ open, onOpenChange }: NewDoubtDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-4">
           <input
             type="text"
             placeholder="Doubt title"
