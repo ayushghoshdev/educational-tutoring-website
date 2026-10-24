@@ -4,6 +4,7 @@ import {
   CalendarClock,
   ClipboardClock,
   FolderOpen,
+  GraduationCap,
   LayoutDashboard,
   MessageCircleQuestionMark,
   NotebookPen,
@@ -21,6 +22,7 @@ import { getCurrentUserProfile } from "@/app/actions/authActions";
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/resources", label: "Resources", icon: FolderOpen },
+  { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/time-table", label: "Time Table", icon: CalendarClock },
   { href: "/assignments", label: "Assignments", icon: NotebookPen },
   { href: "/exams", label: "Exams", icon: ClipboardClock },
@@ -33,7 +35,11 @@ const isRouteActive = (pathname: string, href: string) => {
   if (pathname.startsWith(`${href}/`)) return true;
 
   // Handle singular vs plural route variations (e.g. /assignment/my-assignment-1 matching /assignments)
-  const hrefSingular = href.endsWith("s") ? href.slice(0, -1) : href;
+  const hrefSingular = href.endsWith("es")
+    ? href.slice(0, -2)
+    : href.endsWith("s")
+      ? href.slice(0, -1)
+      : href;
   if (pathname === hrefSingular || pathname.startsWith(`${hrefSingular}/`)) {
     return true;
   }
