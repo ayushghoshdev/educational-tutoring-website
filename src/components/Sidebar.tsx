@@ -3,6 +3,7 @@
 import {
   CalendarClock,
   ClipboardClock,
+  FolderOpen,
   LayoutDashboard,
   MessageCircleQuestionMark,
   NotebookPen,
@@ -19,6 +20,7 @@ import { getCurrentUserProfile } from "@/app/actions/authActions";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/resources", label: "Resources", icon: FolderOpen },
   { href: "/time-table", label: "Time Table", icon: CalendarClock },
   { href: "/assignments", label: "Assignments", icon: NotebookPen },
   { href: "/exams", label: "Exams", icon: ClipboardClock },
