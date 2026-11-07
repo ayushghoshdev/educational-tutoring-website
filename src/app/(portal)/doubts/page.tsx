@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import DoubtCard from "./DoubtCard";
 import { NewDoubtDialog } from "./NewDoubtDialog";
+import { usePortalUser } from "@/components/PortalUserProvider";
 
 const unresolvedDoubts = [
   {
@@ -37,6 +38,7 @@ const resolvedDoubts = [
 ];
 
 export default function DoubtsPage() {
+  const { isStudent } = usePortalUser();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
@@ -45,9 +47,11 @@ export default function DoubtsPage() {
         <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
           Your <span className="text-foreground/90">Doubts</span>
         </h1>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus /> New
-        </Button>
+        {isStudent && (
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus /> New
+          </Button>
+        )}
       </div>
 
       <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
@@ -80,7 +84,9 @@ export default function DoubtsPage() {
         </div>
       </section>
 
-      <NewDoubtDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      {isStudent && (
+        <NewDoubtDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      )}
     </div>
   );
 }

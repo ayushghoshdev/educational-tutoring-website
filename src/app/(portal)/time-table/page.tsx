@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventDetailsDialog } from "./EventDetailsDialog";
 import { cn } from "@/lib/utils";
+import { usePortalUser } from "@/components/PortalUserProvider";
 
 // Types
 export type ScheduleEventType = "class" | "exam" | "assignment";
@@ -405,6 +406,8 @@ function TimetableEventCard({
 }
 
 export default function TimeTablePage() {
+  const { role, isTeacher, isStudent } = usePortalUser();
+
   // Always starts from current day
   const [startDate, setStartDate] = useState<Date>(() => {
     const d = new Date();

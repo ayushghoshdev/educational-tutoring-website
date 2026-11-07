@@ -18,12 +18,13 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import Image from "next/image";
 import { getCurrentUserProfile } from "@/app/actions/authActions";
+import { usePortalUser } from "@/components/PortalUserProvider";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/resources", label: "Resources", icon: FolderOpen },
-  { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/time-table", label: "Time Table", icon: CalendarClock },
+  { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/assignments", label: "Assignments", icon: NotebookPen },
   { href: "/exams", label: "Exams", icon: ClipboardClock },
   { href: "/doubts", label: "Doubts", icon: MessageCircleQuestionMark },
@@ -48,49 +49,84 @@ const isRouteActive = (pathname: string, href: string) => {
 };
 
 export default function Sidebar() {
+  const portalUser = usePortalUser();
   const [expanded, setExpanded] = useState(true);
+
+  const getDerivedUserInfo = () => {
+    if (portalUser.profile || portalUser.user) {
+      const name =
+        portalUser.profile?.full_name || portalUser.user?.name || "User";
+      let subtitle = "Member";
+      if (portalUser.role === "student") {
+        subtitle =
+          `${portalUser.profile?.education_subcategory || portalUser.profile?.education_category || "Student"} ${
+            portalUser.profile?.education_year
+              ? `• ${portalUser.profile.education_year}`
+              : ""
+          }`.trim();
+      } else if (portalUser.role === "teacher") {
+        subtitle = `${portalUser.profile?.education_category || "Teacher"}${
+          portalUser.profile?.degree_institute
+            ? ` • ${portalUser.profile.degree_institute}`
+            : ""
+        }`.trim();
+      }
+      return {
+        name,
+        subtitle,
+        avatarUrl:
+          portalUser.profile?.picture || portalUser.user?.image || "",
+      };
+    }
+    return {
+      name: "User Profile",
+      subtitle: "View details",
+      avatarUrl: "",
+    };
+  };
+
   const [userInfo, setUserInfo] = useState<{
     name: string;
     subtitle: string;
     avatarUrl: string;
-  }>({
-    name: "User Profile",
-    subtitle: "View details",
-    avatarUrl: "",
-  });
+  }>(getDerivedUserInfo);
 
   const pathname = usePathname();
 
   useEffect(() => {
-    async function loadUser() {
-      try {
-        const { session, profile } = await getCurrentUserProfile();
-        if (session) {
-          const name = profile?.full_name || session.name || "User";
-          let subtitle = "Member";
-          if (profile?.role === "student") {
-            subtitle =
-              `${profile.education_subcategory || profile.education_category || "Student"} ${
-                profile.education_year ? `• ${profile.education_year}` : ""
+    if (portalUser.profile || portalUser.user) {
+      setUserInfo(getDerivedUserInfo());
+    } else {
+      async function loadUser() {
+        try {
+          const { session, profile } = await getCurrentUserProfile();
+          if (session) {
+            const name = profile?.full_name || session.name || "User";
+            let subtitle = "Member";
+            if (profile?.role === "student") {
+              subtitle =
+                `${profile.education_subcategory || profile.education_category || "Student"} ${
+                  profile.education_year ? `• ${profile.education_year}` : ""
+                }`.trim();
+            } else if (profile?.role === "teacher") {
+              subtitle = `${profile.education_category || "Teacher"}${
+                profile.degree_institute ? ` • ${profile.degree_institute}` : ""
               }`.trim();
-          } else if (profile?.role === "teacher") {
-            subtitle = `${profile.education_category || "Teacher"}${
-              profile.degree_institute ? ` • ${profile.degree_institute}` : ""
-            }`.trim();
-          }
+            }
 
-          setUserInfo({
-            name,
-            subtitle,
-            avatarUrl: profile?.picture || session.image || "",
-          });
+            setUserInfo({
+              name,
+              subtitle,
+              avatarUrl: profile?.picture || session.image || "",
+            });
+          }
+        } catch (err) {
+          console.error("Failed to load user info for sidebar:", err);
         }
-      } catch (err) {
-        console.error("Failed to load user info for sidebar:", err);
       }
+      loadUser();
     }
-    loadUser();
-  }, [pathname]);
+  }, [pathname, portalUser.profile, portalUser.user, portalUser.role]);
 
   const toggleSidebar = () => {
     setExpanded(!expanded);

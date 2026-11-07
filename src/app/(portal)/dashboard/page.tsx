@@ -115,6 +115,10 @@ const doubts = [
 
 export default async function DashboardPage() {
   const { session, profile } = await getCurrentUserProfile();
+  const role = profile?.role || session?.role || "student";
+  const isTeacher = role === "teacher";
+  const isStudent = role === "student";
+
   const fullName =
     profile?.full_name?.trim() ||
     (session?.name && session.name !== "User" ? session.name.trim() : "");

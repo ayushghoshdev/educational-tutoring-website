@@ -1,4 +1,7 @@
 import CourseCard from "./CourseCard";
+import { getCurrentUserProfile } from "@/app/actions/authActions";
+
+export const dynamic = "force-dynamic";
 
 const currentCourses = [
   {
@@ -36,7 +39,12 @@ const moreCourses = [
   },
 ];
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const { session, profile } = await getCurrentUserProfile();
+  const role = profile?.role || session?.role || "student";
+  const isTeacher = role === "teacher";
+  const isStudent = role === "student";
+
   return (
     <div className="px-2 py-5 mr-2">
       <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
