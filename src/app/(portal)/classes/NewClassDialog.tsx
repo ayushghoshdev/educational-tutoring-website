@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,29 +16,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   DatePickerDropdowns,
   TimePickerDropdowns,
   MONTHS,
 } from "@/components/DateTimePickers";
+import { StudentAllotmentSelector } from "@/components/StudentAllotmentSelector";
 
 type NewClassDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddClass?: (classData: any) => void;
 };
-
-const sampleStudents = [
-  { id: "student-1", name: "Student 1" },
-  { id: "student-2", name: "Student 2" },
-  { id: "student-3", name: "Student 3" },
-  { id: "student-4", name: "Student 4" },
-  { id: "student-5", name: "Student 5" },
-  { id: "student-6", name: "Student 6" },
-];
 
 export function NewClassDialog({
   open,
@@ -64,7 +52,6 @@ export function NewClassDialog({
 
   // Student selection
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
-  const [studentsDropdownOpen, setStudentsDropdownOpen] = useState(false);
 
   // Outside click guard for select dropdowns
   const [openSelectCount, setOpenSelectCount] = useState(0);
@@ -77,20 +64,6 @@ export function NewClassDialog({
       setTimeout(() => {
         justClosedSelectRef.current = false;
       }, 200);
-    }
-  };
-
-  const toggleStudent = (id: string) => {
-    setSelectedStudentIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedStudentIds.length === sampleStudents.length) {
-      setSelectedStudentIds([]);
-    } else {
-      setSelectedStudentIds(sampleStudents.map((s) => s.id));
     }
   };
 
@@ -130,7 +103,6 @@ export function NewClassDialog({
     setMinute("");
     setPeriod("AM");
     setSelectedStudentIds([]);
-    setStudentsDropdownOpen(false);
     onOpenChange(false);
   };
 
@@ -233,79 +205,10 @@ export function NewClassDialog({
             </Select>
           </div>
 
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">
-              Allot to Students
-            </label>
-            <button
-              type="button"
-              onClick={() => setStudentsDropdownOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm bg-secondary hover:bg-secondary/80 text-foreground transition-all duration-200 outline-none cursor-pointer"
-            >
-              <span>
-                {selectedStudentIds.length === 0
-                  ? "Select students..."
-                  : `${selectedStudentIds.length} student${
-                      selectedStudentIds.length > 1 ? "s" : ""
-                    } selected`}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "w-4 h-4 text-muted-foreground transition-transform duration-200",
-                  studentsDropdownOpen && "rotate-180",
-                )}
-              />
-            </button>
-
-            {studentsDropdownOpen && (
-              <div className="mt-2 rounded-lg bg-secondary border border-border/50 p-2 space-y-1 max-h-44 overflow-y-auto">
-                <div className="flex items-center justify-between px-2 py-1 text-xs text-muted-foreground border-b border-border/40 pb-1.5 mb-1">
-                  <span>Assign to examinees / students</span>
-                  <button
-                    type="button"
-                    onClick={toggleSelectAll}
-                    className="text-primary hover:underline font-medium text-xs cursor-pointer"
-                  >
-                    {selectedStudentIds.length === sampleStudents.length
-                      ? "Deselect All"
-                      : "Select All"}
-                  </button>
-                </div>
-                {sampleStudents.map((s) => {
-                  const isSelected = selectedStudentIds.includes(s.id);
-                  return (
-                    <div
-                      key={s.id}
-                      onClick={() => toggleStudent(s.id)}
-                      className={cn(
-                        "flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors text-sm",
-                        isSelected
-                          ? "bg-muted/70 text-foreground"
-                          : "hover:bg-muted/40 text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                            s.name,
-                          )}&background=0A0A0A&color=fff`}
-                          width={20}
-                          height={20}
-                          alt={s.name}
-                          className="rounded-full shrink-0"
-                        />
-                        <span className="font-medium">{s.name}</span>
-                      </div>
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => toggleStudent(s.id)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <StudentAllotmentSelector
+            selectedStudentIds={selectedStudentIds}
+            onChange={setSelectedStudentIds}
+          />
 
           <div className="flex">
             <Button

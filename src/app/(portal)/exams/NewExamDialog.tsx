@@ -23,6 +23,7 @@ import {
   TimePickerDropdowns,
   MONTHS,
 } from "@/components/DateTimePickers";
+import { StudentAllotmentSelector } from "@/components/StudentAllotmentSelector";
 
 type NewExamDialogProps = {
   open: boolean;
@@ -51,6 +52,9 @@ export function NewExamDialog({
   const [mode, setMode] = useState("Online");
   const [file, setFile] = useState<File | null>(null);
 
+  // Student selection
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+
   // Outside click guard
   const [openSelectCount, setOpenSelectCount] = useState(0);
   const justClosedSelectRef = useRef(false);
@@ -68,6 +72,7 @@ export function NewExamDialog({
   const isSubmitDisabled =
     !title.trim() ||
     !file ||
+    selectedStudentIds.length === 0 ||
     !day ||
     !month ||
     !year ||
@@ -89,6 +94,7 @@ export function NewExamDialog({
         startTime: formattedTime,
         totalTime,
         mode,
+        allottedStudents: selectedStudentIds,
         file,
       });
     }
@@ -101,6 +107,7 @@ export function NewExamDialog({
     setMinute("");
     setPeriod("AM");
     setFile(null);
+    setSelectedStudentIds([]);
     onOpenChange(false);
   };
 
@@ -212,6 +219,11 @@ export function NewExamDialog({
             file={file}
             onFileSelect={setFile}
             label="Upload question paper"
+          />
+
+          <StudentAllotmentSelector
+            selectedStudentIds={selectedStudentIds}
+            onChange={setSelectedStudentIds}
           />
 
           <div className="flex items-center gap-2.5 p-3 rounded-lg bg-secondary/80 text-xs text-muted-foreground">

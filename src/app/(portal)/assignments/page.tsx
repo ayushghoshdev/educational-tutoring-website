@@ -55,6 +55,7 @@ export default function AssignmentsPage() {
     dueDate: string;
     dueTime: string;
     submissionMode: string;
+    allottedStudents?: string[];
     file: File | null;
   }) => {
     const teacherName = profile?.full_name || user?.name || "Teacher";

@@ -56,6 +56,7 @@ export default function ExamsPage() {
     startTime: string;
     totalTime: string;
     mode: string;
+    allottedStudents?: string[];
     file: File | null;
   }) => {
     const teacherName = profile?.full_name || user?.name || "Teacher";

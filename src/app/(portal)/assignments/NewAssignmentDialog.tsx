@@ -22,6 +22,7 @@ import {
   TimePickerDropdowns,
   MONTHS,
 } from "@/components/DateTimePickers";
+import { StudentAllotmentSelector } from "@/components/StudentAllotmentSelector";
 
 type NewAssignmentDialogProps = {
   open: boolean;
@@ -48,6 +49,9 @@ export function NewAssignmentDialog({
   const [minute, setMinute] = useState("");
   const [period, setPeriod] = useState("AM");
 
+  // Student selection
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+
   // Outside click guard
   const [openSelectCount, setOpenSelectCount] = useState(0);
   const justClosedSelectRef = useRef(false);
@@ -65,6 +69,7 @@ export function NewAssignmentDialog({
   const isSubmitDisabled =
     !title.trim() ||
     !file ||
+    selectedStudentIds.length === 0 ||
     !day ||
     !month ||
     !year ||
@@ -85,6 +90,7 @@ export function NewAssignmentDialog({
         dueDate: formattedDate,
         dueTime: formattedTime,
         submissionMode,
+        allottedStudents: selectedStudentIds,
         file,
       });
     }
@@ -97,6 +103,7 @@ export function NewAssignmentDialog({
     setMinute("");
     setPeriod("AM");
     setFile(null);
+    setSelectedStudentIds([]);
     onOpenChange(false);
   };
 
@@ -180,6 +187,11 @@ export function NewAssignmentDialog({
             file={file}
             onFileSelect={setFile}
             label="Upload assignment"
+          />
+
+          <StudentAllotmentSelector
+            selectedStudentIds={selectedStudentIds}
+            onChange={setSelectedStudentIds}
           />
 
           <div className="flex">
