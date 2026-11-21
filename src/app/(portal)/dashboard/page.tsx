@@ -235,23 +235,6 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
-
-      <section className="bg-sidebar rounded-lg px-4 py-2 mt-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg">You might also like</h2>
-          <Link href="/courses">
-            <Button variant="ghost">
-              View more courses
-              <ArrowUpRight />
-            </Button>
-          </Link>
-        </div>
-        <div className="flex gap-2 mt-1 mb-2">
-          {courses.map((cls) => (
-            <CourseCard key={cls.id} {...cls} />
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

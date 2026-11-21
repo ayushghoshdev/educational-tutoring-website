@@ -28,7 +28,6 @@ const links = [
   { href: "/assignments", label: "Assignments", icon: NotebookPen },
   { href: "/exams", label: "Exams", icon: ClipboardClock },
   { href: "/doubts", label: "Doubts", icon: MessageCircleQuestionMark },
-  { href: "/courses", label: "Courses", icon: Package },
 ];
 
 const isRouteActive = (pathname: string, href: string) => {
@@ -74,8 +73,7 @@ export default function Sidebar() {
       return {
         name,
         subtitle,
-        avatarUrl:
-          portalUser.profile?.picture || portalUser.user?.image || "",
+        avatarUrl: portalUser.profile?.picture || portalUser.user?.image || "",
       };
     }
     return {
