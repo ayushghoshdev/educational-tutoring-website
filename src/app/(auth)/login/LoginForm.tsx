@@ -62,6 +62,13 @@ export default function LoginForm({ sessionExpired = false }: LoginFormProps) {
 
   return (
     <div className="w-full max-w-sm space-y-4 rounded-2xl">
+      {/* Temporary access account text */}
+      <p className="absolute top-5 left-5">Temporary accounts:</p>
+      <p className="absolute top-15 left-5 select-all">student@xyz.com</p>
+      <p className="absolute top-20 left-5 select-all">StudentAccount123</p>
+      <p className="absolute top-30 left-5 select-all">teacher@xyz.com</p>
+      <p className="absolute top-35 left-5 select-all">TeacherAccount123</p>
+
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-medium tracking-tight">Login</h1>
       </div>
