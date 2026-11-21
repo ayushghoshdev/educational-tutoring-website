@@ -1,5 +1,4 @@
 import Image from "next/image";
-import ModeBadge from "./ModeBadge";
 
 type ExamCardProps = {
   name: string;
@@ -8,12 +7,7 @@ type ExamCardProps = {
   mode: string;
 };
 
-export default function ExamCard({
-  name,
-  teacher,
-  time,
-  mode,
-}: ExamCardProps) {
+export default function ExamCard({ name, teacher, time, mode }: ExamCardProps) {
   return (
     <div className="flex-1 min-w-0 cursor-pointer rounded-lg bg-accent/65 hover:bg-accent w-full px-3 py-2 transition-all">
       <p className="text-lg truncate leading-6">{name}</p>
@@ -30,7 +24,7 @@ export default function ExamCard({
       <div className="flex items-center gap-2 mt-1">
         <p>{time}</p>
         <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-        <ModeBadge mode={mode} />
+        <p>{mode}</p>
       </div>
     </div>
   );

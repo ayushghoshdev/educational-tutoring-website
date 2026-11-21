@@ -1,5 +1,4 @@
 import Image from "next/image";
-import ModeBadge from "./ModeBadge";
 
 type ClassCardProps = {
   name: string;
@@ -30,7 +29,7 @@ export default function ClassCard({
       <div className="flex items-center gap-2 mt-1">
         <p>{time}</p>
         <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-        <ModeBadge mode={mode} />
+        <p>{mode}</p>
       </div>
     </div>
   );
