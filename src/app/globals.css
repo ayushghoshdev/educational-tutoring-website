@@ -37,6 +37,18 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-class-card: var(--class-card);
+  --color-class-card-hover: var(--class-card-hover);
+  --color-class-icon: var(--class-icon);
+  --color-exam-card: var(--exam-card);
+  --color-exam-card-hover: var(--exam-card-hover);
+  --color-exam-icon: var(--exam-icon);
+  --color-assignment-card: var(--assignment-card);
+  --color-assignment-card-hover: var(--assignment-card-hover);
+  --color-assignment-icon: var(--assignment-icon);
+  --color-doubt-card: var(--doubt-card);
+  --color-doubt-card-hover: var(--doubt-card-hover);
+  --color-doubt-icon: var(--doubt-icon);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -79,6 +91,18 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --class-card: oklch(0.606 0.25 292.717 / 8%);
+  --class-card-hover: oklch(0.606 0.25 292.717 / 14%);
+  --class-icon: oklch(0.606 0.25 292.717 / 25%);
+  --exam-card: oklch(0.645 0.246 16.439 / 8%);
+  --exam-card-hover: oklch(0.645 0.246 16.439 / 14%);
+  --exam-icon: oklch(0.645 0.246 16.439 / 25%);
+  --assignment-card: oklch(0.696 0.17 162.48 / 8%);
+  --assignment-card-hover: oklch(0.696 0.17 162.48 / 14%);
+  --assignment-icon: oklch(0.696 0.17 162.48 / 25%);
+  --doubt-card: oklch(1 0 0 / 4%);
+  --doubt-card-hover: oklch(1 0 0 / 8%);
+  --doubt-icon: oklch(1 0 0 / 7%);
 }
 
 @layer base {

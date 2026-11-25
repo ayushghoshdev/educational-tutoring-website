@@ -1,36 +1,55 @@
 import Image from "next/image";
-
-type AssignmentCardProps = {
-  title: string;
-  teacher: string;
-  time: string;
-  mode: string;
-};
+import { NotebookPen } from "lucide-react";
+import { AssignmentItem } from "./types";
 
 export default function AssignmentCard({
   title,
   teacher,
+  teacherAvatar,
+  dueDate,
   time,
   mode,
-}: AssignmentCardProps) {
+}: AssignmentItem) {
   return (
-    <div className="flex-1 min-w-0 cursor-pointer rounded-lg bg-accent/65 hover:bg-accent w-full px-3 py-2 transition-all">
-      <p className="text-lg truncate leading-6">{title}</p>
-      <div className="flex items-center gap-1">
-        <Image
-          src="https://ui-avatars.com/api/?name=Teacher+Name&background=0A0A0A&color=fff"
-          width={18}
-          height={18}
-          alt="TN"
-          className="rounded-full shrink-0"
-        />
-        <p className="text-sm text-muted-foreground">{teacher}</p>
+    <button
+      type="button"
+      className="w-full text-left cursor-pointer rounded-lg bg-assignment-card hover:bg-assignment-card-hover px-3.5 py-3 transition-colors flex items-center justify-between gap-3"
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="h-9 w-9 rounded-lg bg-assignment-icon flex items-center justify-center shrink-0">
+          <NotebookPen size={17} className="text-foreground/90" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-foreground truncate leading-5">
+            {title}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground min-w-0">
+            {teacherAvatar && (
+              <Image
+                src={teacherAvatar}
+                width={15}
+                height={15}
+                alt={teacher}
+                className="rounded-full shrink-0"
+                unoptimized
+              />
+            )}
+            <span className="truncate">{teacher}</span>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-2 mt-1">
-        <p>{time}</p>
-        <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-        <p>{mode}</p>
+
+      <div className="flex flex-col items-end gap-0.5 shrink-0">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-foreground/90 whitespace-nowrap">
+          <span>{dueDate}</span>
+          <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block shrink-0" />
+          <span className="tabular-nums">{time}</span>
+        </div>
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {mode}
+        </span>
       </div>
-    </div>
+    </button>
   );
 }

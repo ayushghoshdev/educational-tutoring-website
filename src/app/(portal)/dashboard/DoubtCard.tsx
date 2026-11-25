@@ -1,57 +1,70 @@
 import Image from "next/image";
-import { Check, X } from "lucide-react";
+import { Check, MessageCircleQuestionMark, X } from "lucide-react";
+import { DoubtItem } from "./types";
 
-type DoubtCardProps = {
-  title: string;
-  teacher: string;
-  askedTime: string;
-  status?: "resolved" | "unresolved" | string;
-};
+interface DoubtCardProps extends DoubtItem {
+  isTeacher?: boolean;
+}
 
 export default function DoubtCard({
   title,
   teacher,
+  teacherAvatar,
   askedTime,
   status,
+  isTeacher = false,
 }: DoubtCardProps) {
   const isResolved = status?.toLowerCase() === "resolved";
   const isUnresolved = status?.toLowerCase() === "unresolved";
 
   return (
-    <div className="flex-1 min-w-0 cursor-pointer rounded-lg bg-accent/65 hover:bg-accent w-full px-3 py-2 transition-all">
-      <p className="text-lg truncate leading-6">{title}</p>
-      <div className="flex items-center gap-1">
-        <p className="text-sm text-muted-foreground">Asked to</p>
-        <Image
-          src="https://ui-avatars.com/api/?name=Teacher+Name&background=0A0A0A&color=fff"
-          width={18}
-          height={18}
-          alt="TN"
-          className="rounded-full shrink-0"
-        />
-        <p className="text-sm text-muted-foreground">{teacher}</p>
+    <button
+      type="button"
+      className="w-full text-left cursor-pointer rounded-lg bg-doubt-card hover:bg-doubt-card-hover px-3.5 py-3 transition-colors flex items-center justify-between gap-3"
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="h-9 w-9 rounded-lg bg-doubt-icon flex items-center justify-center shrink-0">
+          <MessageCircleQuestionMark
+            size={17}
+            className="text-muted-foreground"
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-foreground truncate leading-5">
+            {title}
+          </p>
+          {!isTeacher && (
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground min-w-0">
+              <span className="shrink-0">Asked to</span>
+              {teacherAvatar && (
+                <Image
+                  src={teacherAvatar}
+                  width={15}
+                  height={15}
+                  alt={teacher}
+                  className="rounded-full shrink-0"
+                  unoptimized
+                />
+              )}
+              <span className="truncate">{teacher}</span>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-2 mt-1">
-        <p>Asked {askedTime}</p>
+
+      <div className="flex flex-col items-end gap-0.5 shrink-0">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          Asked {askedTime}
+        </span>
         {status && (
-          <>
-            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-            <span
-              className={`inline-flex items-center gap-1 text-sm ${
-                isResolved
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : isUnresolved
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {isResolved && <Check className="w-3.5 h-3.5" />}
-              {isUnresolved && <X className="w-3.5 h-3.5" />}
-              <span className="capitalize">{status}</span>
-            </span>
-          </>
+          <span className="inline-flex items-center gap-1 text-xs text-foreground/80 whitespace-nowrap">
+            {isResolved && <Check className="w-3.5 h-3.5" />}
+            {isUnresolved && <X className="w-3.5 h-3.5" />}
+            <span className="capitalize">{status}</span>
+          </span>
         )}
       </div>
-    </div>
+    </button>
   );
 }

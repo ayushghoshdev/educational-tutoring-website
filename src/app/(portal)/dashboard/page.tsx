@@ -1,123 +1,24 @@
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ArrowUpRight } from "lucide-react";
 import ClassCard from "./ClassCard";
-import Link from "next/link";
 import ExamCard from "./ExamCard";
 import AssignmentCard from "./AssignmentCard";
-import CourseCard from "./CourseCard";
 import DoubtCard from "./DoubtCard";
+import GreetingHeading from "./GreetingHeading";
+import Link from "next/link";
 import { getCurrentUserProfile } from "@/app/actions/authActions";
+import {
+  initialClasses,
+  initialExams,
+  initialAssignments,
+  initialDoubts,
+} from "./dashboardData";
 
 export const dynamic = "force-dynamic";
-const classes = [
-  {
-    id: 1,
-    name: "Class name",
-    teacher: "Teacher name",
-    time: "10:00 AM",
-    mode: "Offline",
-  },
-  {
-    id: 2,
-    name: "A really long class name",
-    teacher: "Teacher name",
-    time: "12:30 PM",
-    mode: "Online, Offline",
-  },
-  {
-    id: 3,
-    name: "Class name",
-    teacher: "Teacher name",
-    time: "2:30 PM",
-    mode: "Online",
-  },
-];
-
-const exams = [
-  {
-    id: 1,
-    name: "Exam name",
-    teacher: "Teacher name",
-    time: "7:30 PM",
-    mode: "Online",
-  },
-  {
-    id: 2,
-    name: "Exam name",
-    teacher: "Teacher name",
-    time: "8:50 PM",
-    mode: "Offline",
-  },
-];
-
-const assignments = [
-  {
-    id: 1,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    time: "5:00 PM",
-    mode: "Online",
-  },
-  {
-    id: 2,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    time: "5:00 PM",
-    mode: "Offline",
-  },
-];
-
-const courses = [
-  {
-    id: 1,
-    title: "Course title",
-    teacher: "Teacher name",
-    mode: "Offline",
-  },
-  {
-    id: 2,
-    title: "Course title",
-    teacher: "Teacher name",
-    mode: "Online",
-  },
-  {
-    id: 3,
-    title: "Course title",
-    teacher: "Teacher name",
-    mode: "Online / Offline",
-  },
-];
-
-const doubts = [
-  {
-    id: 1,
-    title: "Doubt title",
-    teacher: "Teacher name",
-    askedTime: "10 hours ago",
-    status: "resolved",
-  },
-  {
-    id: 2,
-    title: "Doubt title",
-    teacher: "Teacher name",
-    askedTime: "2 days ago",
-    status: "unresolved",
-  },
-];
 
 export default async function DashboardPage() {
   const { session, profile } = await getCurrentUserProfile();
   const role = profile?.role || session?.role || "student";
   const isTeacher = role === "teacher";
-  const isStudent = role === "student";
 
   const fullName =
     profile?.full_name?.trim() ||
@@ -125,113 +26,107 @@ export default async function DashboardPage() {
 
   return (
     <div className="px-2 py-5 mr-2">
-      <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
-        {fullName ? (
-          <>
-            Hello, <span className="text-foreground/90">{fullName}</span>
-          </>
-        ) : (
-          <>
-            Your <span className="text-foreground/90">dashboard</span>
-          </>
-        )}
-      </h1>
+      <GreetingHeading fullName={fullName} />
 
-      <section className="bg-sidebar rounded-lg px-4 py-2 mt-4">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-lg">Your agenda</h2>
-          <Select defaultValue="today">
-            <SelectTrigger className="hover:bg-muted/65!">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This week</SelectItem>
-                <SelectItem value="month">This month</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <div className="flex items-center justify-between mt-1">
-            <h3 className="flex items-center gap-2">
-              Classes{" "}
+      {/* Top Bento Row: Classes & Exams */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+        {/* Classes Panel */}
+        <section className="lg:col-span-7 bg-sidebar rounded-lg px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 flex flex-col">
+          <div className="flex items-center justify-between gap-2 mb-2.5">
+            <h2 className="text-lg flex items-center gap-2">
+              Classes
               <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-              {classes.length}
-            </h3>
-            <Link href="/time-table">
-              <Button variant="ghost">
-                View all classes
-                <ArrowUpRight />
-              </Button>
+              <span className="text-muted-foreground">
+                {initialClasses.length}
+              </span>
+            </h2>
+            <Link
+              href="/time-table"
+              className="inline-flex items-center gap-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>View all</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="flex gap-2 mt-1 mb-2">
-            {classes.map((cls) => (
+          <div className="flex flex-col gap-2.5">
+            {initialClasses.map((cls) => (
               <ClassCard key={cls.id} {...cls} />
             ))}
           </div>
-        </div>
-        <div>
-          <div className="flex items-center justify-between mt-1">
-            <h3 className="flex items-center gap-2">
-              Exams{" "}
+        </section>
+
+        {/* Exams Panel */}
+        <section className="lg:col-span-5 bg-sidebar rounded-lg px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 flex flex-col">
+          <div className="flex items-center justify-between gap-2 mb-2.5">
+            <h2 className="text-lg flex items-center gap-2">
+              Exams
               <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-              {exams.length}
-            </h3>
-            <Link href="/exams">
-              <Button variant="ghost">
-                View all exams
-                <ArrowUpRight />
-              </Button>
+              <span className="text-muted-foreground">
+                {initialExams.length}
+              </span>
+            </h2>
+            <Link
+              href="/exams"
+              className="inline-flex items-center gap-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>View all</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="flex gap-2 mt-1 mb-2">
-            {exams.map((cls) => (
-              <ExamCard key={cls.id} {...cls} />
+          <div className="flex flex-col gap-2.5">
+            {initialExams.map((exam) => (
+              <ExamCard key={exam.id} {...exam} />
             ))}
           </div>
+        </section>
+      </div>
+
+      {/* Assignments Panel */}
+      <section className="bg-sidebar rounded-lg px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h2 className="text-lg flex items-center gap-2">
+            Assignments
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span className="text-muted-foreground">
+              {initialAssignments.length}
+            </span>
+          </h2>
+          <Link
+            href="/assignments"
+            className="inline-flex items-center gap-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span>View all</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
-        <div>
-          <div className="flex items-center justify-between mt-1">
-            <h3 className="flex items-center gap-2">
-              Assignments{" "}
-              <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-              {assignments.length}
-            </h3>
-            <Link href="/assignments">
-              <Button variant="ghost">
-                View all assignments
-                <ArrowUpRight />
-              </Button>
-            </Link>
-          </div>
-          <div className="flex gap-2 mt-1 mb-2">
-            {assignments.map((cls) => (
-              <AssignmentCard key={cls.id} {...cls} />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {initialAssignments.map((assignment) => (
+            <AssignmentCard key={assignment.id} {...assignment} />
+          ))}
         </div>
       </section>
 
-      <section className="bg-sidebar rounded-lg px-4 py-2 mt-4">
-        <div className="flex items-center justify-between">
+      {/* Doubts Panel */}
+      <section className="bg-sidebar rounded-lg px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
           <h2 className="text-lg flex items-center gap-2">
-            Your doubts{" "}
+            {isTeacher ? "Doubts asked to you" : "Your doubts"}
             <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-            {doubts.length}
+            <span className="text-muted-foreground">
+              {initialDoubts.length}
+            </span>
           </h2>
-          <Link href="/doubts">
-            <Button variant="ghost">
-              View all doubts
-              <ArrowUpRight />
-            </Button>
+          <Link
+            href="/doubts"
+            className="inline-flex items-center gap-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span>View all</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <div className="flex gap-2 mt-1 mb-2">
-          {doubts.map((cls) => (
-            <DoubtCard key={cls.id} {...cls} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {initialDoubts.map((doubt) => (
+            <DoubtCard key={doubt.id} {...doubt} isTeacher={isTeacher} />
           ))}
         </div>
       </section>
