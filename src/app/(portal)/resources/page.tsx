@@ -7,56 +7,20 @@ import ResourceCard from "./ResourceCard";
 import { ResourceDialog, ResourceItem } from "./ResourceDialog";
 import { NewResourceDialog } from "./NewResourceDialog";
 import { usePortalUser } from "@/components/PortalUserProvider";
-
-const initialResources: ResourceItem[] = [
-  {
-    id: 1,
-    title: "Resource #1",
-    teacher: "Teacher 1",
-    sharedTime: "10 minutes ago",
-    fileUrl: "/resource_example.pdf",
-  },
-  {
-    id: 2,
-    title: "Resource #2",
-    teacher: "Teacher 2",
-    sharedTime: "yesterday",
-    fileUrl: "/resource_example.pdf",
-  },
-  {
-    id: 3,
-    title: "Resource #3",
-    teacher: "Teacher 1",
-    sharedTime: "this friday",
-    fileUrl: "/resource_example.pdf",
-  },
-  {
-    id: 4,
-    title: "Resource #4",
-    teacher: "Teacher 2",
-    sharedTime: "last week",
-    fileUrl: "/resource_example.pdf",
-  },
-  {
-    id: 5,
-    title: "Resources #5",
-    teacher: "Teacher 1",
-    sharedTime: "2 weeks ago",
-    fileUrl: "/resource_example.pdf",
-  },
-];
+import { getPortalAvatarUrl } from "@/lib/utils";
+import { initialResources, type PortalResourceItem } from "../data";
 
 export default function ResourcesPage() {
   const { isTeacher, profile, user } = usePortalUser();
   const [resourcesList, setResourcesList] =
-    useState<ResourceItem[]>(initialResources);
+    useState<PortalResourceItem[]>(initialResources);
   const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(
     null,
   );
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
 
-  const handleResourceClick = (resource: ResourceItem) => {
+  const handleResourceClick = (resource: PortalResourceItem) => {
     setSelectedResource(resource);
     setViewDialogOpen(true);
   };
@@ -74,10 +38,11 @@ export default function ResourcesPage() {
         ? URL.createObjectURL(files[0])
         : "/resource_example.pdf";
 
-    const newRes: ResourceItem = {
+    const newRes: PortalResourceItem = {
       id: Date.now(),
       title,
       teacher: teacherName,
+      teacherAvatar: getPortalAvatarUrl(teacherName),
       sharedTime: "Just now",
       fileUrl,
     };
@@ -97,20 +62,27 @@ export default function ResourcesPage() {
         )}
       </div>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
-          <h2 className="text-lg">All Resources</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-1 mb-2">
-            {resourcesList.map((res) => (
-              <ResourceCard
-                key={res.id}
-                title={res.title}
-                teacher={res.teacher}
-                sharedTime={res.sharedTime}
-                onClick={() => handleResourceClick(res)}
-              />
-            ))}
-          </div>
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h2 className="text-lg flex items-center gap-2">
+            All Resources
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span className="text-muted-foreground">
+              {resourcesList.length}
+            </span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {resourcesList.map((res) => (
+            <ResourceCard
+              key={res.id}
+              title={res.title}
+              teacher={res.teacher}
+              teacherAvatar={res.teacherAvatar}
+              sharedTime={res.sharedTime}
+              onClick={() => handleResourceClick(res)}
+            />
+          ))}
         </div>
       </section>
 

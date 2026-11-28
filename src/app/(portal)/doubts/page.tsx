@@ -6,46 +6,28 @@ import { Plus } from "lucide-react";
 import DoubtCard from "./DoubtCard";
 import { NewDoubtDialog } from "./NewDoubtDialog";
 import { usePortalUser } from "@/components/PortalUserProvider";
+import { initialDoubts } from "../data";
 
-const unresolvedDoubts = [
-  {
-    id: 1,
-    title: "Doubt title",
-    teacher: "Teacher name",
-    askedTime: "10 hours ago",
-  },
-  {
-    id: 2,
-    title: "Doubt title",
-    teacher: "Teacher name",
-    askedTime: "2 days ago",
-  },
-];
-
-const resolvedDoubts = [
-  {
-    id: 1,
-    title: "Doubt title",
-    teacher: "Teacher name",
-    askedTime: "3 days ago",
-  },
-  {
-    id: 2,
-    title: "Doubt title",
-    teacher: "Teacher name",
-    askedTime: "1 week ago",
-  },
-];
+const unresolvedDoubts = initialDoubts.filter((d) => d.status === "unresolved");
+const resolvedDoubts = initialDoubts.filter((d) => d.status === "resolved");
 
 export default function DoubtsPage() {
-  const { isStudent } = usePortalUser();
+  const { isStudent, isTeacher } = usePortalUser();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
     <div className="px-2 py-5 mr-2">
       <div className="flex items-center gap-3">
         <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
-          Your <span className="text-foreground/90">Doubts</span>
+          {isTeacher ? (
+            <>
+              Doubts <span className="text-foreground/90">Asked to You</span>
+            </>
+          ) : (
+            <>
+              Your <span className="text-foreground/90">Doubts</span>
+            </>
+          )}
         </h1>
         {isStudent && (
           <Button onClick={() => setDialogOpen(true)}>
@@ -54,33 +36,39 @@ export default function DoubtsPage() {
         )}
       </div>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
+      {/* Unresolved Doubts */}
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
           <h2 className="text-lg flex items-center gap-2">
-            Unresolved{" "}
+            Unresolved
             <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-            {unresolvedDoubts.length}
+            <span className="text-muted-foreground">
+              {unresolvedDoubts.length}
+            </span>
           </h2>
-          <div className="flex gap-2 mt-1 mb-2">
-            {unresolvedDoubts.map((doubt) => (
-              <DoubtCard key={doubt.id} {...doubt} />
-            ))}
-          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {unresolvedDoubts.map((doubt) => (
+            <DoubtCard key={doubt.id} {...doubt} isTeacher={isTeacher} />
+          ))}
         </div>
       </section>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
+      {/* Resolved Doubts */}
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
           <h2 className="text-lg flex items-center gap-2">
-            Resolved{" "}
+            Resolved
             <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-            {resolvedDoubts.length}
+            <span className="text-muted-foreground">
+              {resolvedDoubts.length}
+            </span>
           </h2>
-          <div className="flex gap-2 mt-1 mb-2">
-            {resolvedDoubts.map((doubt) => (
-              <DoubtCard key={doubt.id} {...doubt} />
-            ))}
-          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {resolvedDoubts.map((doubt) => (
+            <DoubtCard key={doubt.id} {...doubt} isTeacher={isTeacher} />
+          ))}
         </div>
       </section>
 

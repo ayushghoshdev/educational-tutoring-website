@@ -6,61 +6,17 @@ import { Plus } from "lucide-react";
 import ClassCard from "./ClassCard";
 import { NewClassDialog } from "./NewClassDialog";
 import { usePortalUser } from "@/components/PortalUserProvider";
-
-const initialClasses = [
-  {
-    id: 1,
-    title: "Class #1",
-    teacher: "Teacher 1",
-    time: "In 15 minutes",
-    mode: "Online",
-    status: "pending",
-  },
-  {
-    id: 2,
-    title: "Class #2",
-    teacher: "Teacher 2",
-    time: "Tomorrow, 10:00 AM",
-    mode: "Offline",
-    status: "pending",
-  },
-  {
-    id: 3,
-    title: "Class #3",
-    teacher: "Teacher 1",
-    time: "This friday, 2:00 PM",
-    mode: "Online",
-    status: "pending",
-  },
-  {
-    id: 4,
-    title: "Class #4",
-    teacher: "Teacher 2",
-    time: "Yesterday, 11:00 AM",
-    mode: "Online",
-    status: "completed",
-  },
-  {
-    id: 5,
-    title: "Class #5",
-    teacher: "Teacher 1",
-    time: "3 days ago",
-    mode: "Offline",
-    status: "completed",
-  },
-  {
-    id: 6,
-    title: "Class #6",
-    teacher: "Teacher 2",
-    time: "Last week",
-    mode: "Offline",
-    status: "completed",
-  },
-];
+import { computeEndTime, getPortalAvatarUrl } from "@/lib/utils";
+import {
+  initialClasses,
+  mockStudents,
+  type PortalClassItem,
+} from "../data";
 
 export default function ClassesPage() {
   const { isTeacher, profile, user } = usePortalUser();
-  const [classesList, setClassesList] = useState(initialClasses);
+  const [classesList, setClassesList] =
+    useState<PortalClassItem[]>(initialClasses);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleAddClass = (data: {
@@ -71,23 +27,26 @@ export default function ClassesPage() {
     duration: string;
   }) => {
     const teacherName = profile?.full_name || user?.name || "Teacher";
-    let formattedTime = "Upcoming";
-    if (data.date && data.time) {
-      formattedTime = `${data.date}, ${data.time}`;
-    } else if (data.time) {
-      formattedTime = `Today, ${data.time}`;
-    }
+    const startTime = data.time || "10:00 AM";
+    const endTime = computeEndTime(startTime, data.duration || "60");
 
-    const newClass = {
+    const newClass: PortalClassItem = {
       id: Date.now(),
       title: data.className,
       teacher: teacherName,
-      time: formattedTime,
-      mode: data.mode,
+      teacherAvatar: getPortalAvatarUrl(teacherName),
+      date: data.date || "Upcoming",
+      startTime,
+      endTime,
+      mode: data.mode === "Offline" ? "Offline" : "Online",
       status: "pending",
+      attendees: [mockStudents[0], mockStudents[1], mockStudents[2]],
     };
     setClassesList((prev) => [newClass, ...prev]);
   };
+
+  const upcomingClasses = classesList.filter((c) => c.status === "pending");
+  const completedClasses = classesList.filter((c) => c.status === "completed");
 
   return (
     <div className="px-2 py-5 mr-2">
@@ -102,29 +61,39 @@ export default function ClassesPage() {
         )}
       </div>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
-          <h2 className="text-lg">Pending</h2>
-          <div className="flex gap-2 mt-1 mb-2">
-            {classesList
-              .filter((c) => c.status === "pending")
-              .map((c) => (
-                <ClassCard key={c.id} {...c} />
-              ))}
-          </div>
+      {/* Upcoming Classes */}
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h2 className="text-lg flex items-center gap-2">
+            Upcoming
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span className="text-muted-foreground">
+              {upcomingClasses.length}
+            </span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {upcomingClasses.map((c) => (
+            <ClassCard key={c.id} {...c} />
+          ))}
         </div>
       </section>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
-          <h2 className="text-lg">Completed</h2>
-          <div className="flex gap-2 mt-1 mb-2">
-            {classesList
-              .filter((c) => c.status === "completed")
-              .map((c) => (
-                <ClassCard key={c.id} {...c} />
-              ))}
-          </div>
+      {/* Completed Classes */}
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h2 className="text-lg flex items-center gap-2">
+            Completed
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span className="text-muted-foreground">
+              {completedClasses.length}
+            </span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {completedClasses.map((c) => (
+            <ClassCard key={c.id} {...c} />
+          ))}
         </div>
       </section>
 

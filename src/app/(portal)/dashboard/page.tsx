@@ -11,7 +11,7 @@ import {
   initialExams,
   initialAssignments,
   initialDoubts,
-} from "./dashboardData";
+} from "../data";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,13 @@ export default async function DashboardPage() {
   const fullName =
     profile?.full_name?.trim() ||
     (session?.name && session.name !== "User" ? session.name.trim() : "");
+
+  const upcomingClasses = initialClasses.filter((c) => c.status === "pending");
+  const upcomingExams = initialExams.filter((e) => !e.grade && !e.marks);
+  const upcomingAssignments = initialAssignments
+    .filter((a) => !a.grade && !a.marks)
+    .slice(0, 2);
+  const dashboardDoubts = initialDoubts.slice(0, 2);
 
   return (
     <div className="px-2 py-5 mr-2">
@@ -37,7 +44,7 @@ export default async function DashboardPage() {
               Classes
               <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
               <span className="text-muted-foreground">
-                {initialClasses.length}
+                {upcomingClasses.length}
               </span>
             </h2>
             <Link
@@ -49,8 +56,18 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="flex flex-col gap-2.5">
-            {initialClasses.map((cls) => (
-              <ClassCard key={cls.id} {...cls} />
+            {upcomingClasses.map((cls) => (
+              <ClassCard
+                key={cls.id}
+                id={cls.id}
+                name={cls.title}
+                teacher={cls.teacher}
+                teacherAvatar={cls.teacherAvatar}
+                startTime={cls.startTime}
+                endTime={cls.endTime}
+                mode={cls.mode}
+                attendees={cls.attendees}
+              />
             ))}
           </div>
         </section>
@@ -62,7 +79,7 @@ export default async function DashboardPage() {
               Exams
               <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
               <span className="text-muted-foreground">
-                {initialExams.length}
+                {upcomingExams.length}
               </span>
             </h2>
             <Link
@@ -74,8 +91,17 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="flex flex-col gap-2.5">
-            {initialExams.map((exam) => (
-              <ExamCard key={exam.id} {...exam} />
+            {upcomingExams.map((exam) => (
+              <ExamCard
+                key={exam.id}
+                id={exam.id}
+                name={exam.title}
+                teacher={exam.teacher}
+                teacherAvatar={exam.teacherAvatar}
+                startTime={exam.startTime || ""}
+                endTime={exam.endTime || ""}
+                mode={exam.mode}
+              />
             ))}
           </div>
         </section>
@@ -88,7 +114,7 @@ export default async function DashboardPage() {
             Assignments
             <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
             <span className="text-muted-foreground">
-              {initialAssignments.length}
+              {upcomingAssignments.length}
             </span>
           </h2>
           <Link
@@ -100,8 +126,17 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {initialAssignments.map((assignment) => (
-            <AssignmentCard key={assignment.id} {...assignment} />
+          {upcomingAssignments.map((assignment) => (
+            <AssignmentCard
+              key={assignment.id}
+              id={assignment.id}
+              title={assignment.title}
+              teacher={assignment.teacher}
+              teacherAvatar={assignment.teacherAvatar}
+              dueDate={assignment.dueDate || ""}
+              time={assignment.time || ""}
+              mode={assignment.mode}
+            />
           ))}
         </div>
       </section>
@@ -113,7 +148,7 @@ export default async function DashboardPage() {
             {isTeacher ? "Doubts asked to you" : "Your doubts"}
             <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
             <span className="text-muted-foreground">
-              {initialDoubts.length}
+              {dashboardDoubts.length}
             </span>
           </h2>
           <Link
@@ -125,7 +160,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {initialDoubts.map((doubt) => (
+          {dashboardDoubts.map((doubt) => (
             <DoubtCard key={doubt.id} {...doubt} isTeacher={isTeacher} />
           ))}
         </div>

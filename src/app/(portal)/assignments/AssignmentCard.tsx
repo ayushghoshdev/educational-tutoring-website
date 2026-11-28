@@ -1,10 +1,14 @@
 import Image from "next/image";
+import { Check, NotebookPen } from "lucide-react";
+import { cn, getPortalAvatarUrl } from "@/lib/utils";
 
-type ClassCardProps = {
+export type AssignmentCardProps = {
   title: string;
   teacher: string;
+  teacherAvatar?: string;
   mode: string;
-  due?: string;
+  dueDate?: string;
+  time?: string;
   grade?: string;
   marks?: string;
 };
@@ -12,31 +16,76 @@ type ClassCardProps = {
 export default function AssignmentCard({
   title,
   teacher,
+  teacherAvatar,
   mode,
-  due,
+  dueDate,
+  time,
   grade,
   marks,
-}: ClassCardProps) {
+}: AssignmentCardProps) {
+  const isCompleted = Boolean(grade || marks);
+
   return (
-    <div className="flex-1 min-w-0 cursor-pointer rounded-lg bg-accent/65 hover:bg-accent w-full px-3 py-2 transition-all">
-      <p className="text-lg truncate leading-6">{title}</p>
-      <div className="flex items-center gap-1">
-        <Image
-          src="https://ui-avatars.com/api/?name=Teacher+Name&background=0A0A0A&color=fff"
-          width={18}
-          height={18}
-          alt="TN"
-          className="rounded-full shrink-0"
-        />
-        <p className="text-sm text-muted-foreground">{teacher}</p>
+    <button
+      type="button"
+      className={cn(
+        "w-full text-left cursor-pointer rounded-lg bg-assignment-card hover:bg-assignment-card-hover px-3.5 py-3 transition-[background-color,opacity] flex items-center justify-between gap-3",
+        isCompleted && "opacity-70 hover:opacity-95",
+      )}
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="relative h-9 w-9 rounded-lg bg-assignment-icon flex items-center justify-center shrink-0">
+          <NotebookPen size={17} className="text-foreground/90" />
+          {isCompleted && (
+            <span
+              className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center"
+              aria-label="Completed"
+            >
+              <Check size={10} strokeWidth={3} className="text-zinc-950" />
+            </span>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-foreground truncate leading-5">
+            {title}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground min-w-0">
+            <Image
+              src={teacherAvatar || getPortalAvatarUrl(teacher)}
+              width={15}
+              height={15}
+              alt={teacher}
+              className="rounded-full shrink-0"
+              unoptimized
+            />
+            <span className="truncate">{teacher}</span>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-2 mt-1">
-        {due && <p>Due {due}</p>}
-        {grade && <p>{grade}</p>}
-        {marks && <p>{marks}</p>}
-        <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
-        <p>{mode}</p>
+
+      <div className="flex flex-col items-end gap-0.5 shrink-0">
+        {isCompleted ? (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-foreground/90 tabular-nums whitespace-nowrap">
+            {grade && <span>{grade}</span>}
+            {grade && marks && (
+              <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block shrink-0" />
+            )}
+            {marks && <span>{marks}</span>}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-foreground/90 whitespace-nowrap">
+            {dueDate && <span>{dueDate}</span>}
+            {dueDate && time && (
+              <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block shrink-0" />
+            )}
+            {time && <span className="tabular-nums">{time}</span>}
+          </div>
+        )}
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {mode}
+        </span>
       </div>
-    </div>
+    </button>
   );
 }

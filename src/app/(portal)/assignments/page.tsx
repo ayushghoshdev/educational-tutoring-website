@@ -6,48 +6,13 @@ import { Plus } from "lucide-react";
 import AssignmentCard from "./AssignmentCard";
 import { NewAssignmentDialog } from "./NewAssignmentDialog";
 import { usePortalUser } from "@/components/PortalUserProvider";
-
-const initialAssignments = [
-  {
-    id: 1,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    mode: "Offline",
-    due: "in 10 minutes",
-  },
-  {
-    id: 2,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    mode: "Online",
-    due: "tomorrow",
-  },
-  {
-    id: 3,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    mode: "Online",
-    due: "this friday",
-  },
-  {
-    id: 4,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    mode: "Online",
-    grade: "A+",
-  },
-  {
-    id: 5,
-    title: "Assignment title",
-    teacher: "Teacher name",
-    mode: "Offline",
-    marks: "81/100",
-  },
-];
+import { getPortalAvatarUrl } from "@/lib/utils";
+import { initialAssignments, type PortalAssignmentItem } from "../data";
 
 export default function AssignmentsPage() {
   const { isTeacher, profile, user } = usePortalUser();
-  const [assignmentsList, setAssignmentsList] = useState(initialAssignments);
+  const [assignmentsList, setAssignmentsList] =
+    useState<PortalAssignmentItem[]>(initialAssignments);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleAddAssignment = (data: {
@@ -59,22 +24,25 @@ export default function AssignmentsPage() {
     file: File | null;
   }) => {
     const teacherName = profile?.full_name || user?.name || "Teacher";
-    let dueString = "Upcoming";
-    if (data.dueDate && data.dueTime) {
-      dueString = `${data.dueDate}, ${data.dueTime}`;
-    } else if (data.dueDate) {
-      dueString = data.dueDate;
-    }
 
-    const newAssignment = {
+    const newAssignment: PortalAssignmentItem = {
       id: Date.now(),
       title: data.title,
       teacher: teacherName,
-      mode: data.submissionMode,
-      due: dueString,
+      teacherAvatar: getPortalAvatarUrl(teacherName),
+      mode: data.submissionMode === "Offline" ? "Offline" : "Online",
+      dueDate: data.dueDate || "Upcoming",
+      time: data.dueTime || undefined,
     };
     setAssignmentsList((prev) => [newAssignment, ...prev]);
   };
+
+  const upcomingAssignments = assignmentsList.filter(
+    (a) => !a.grade && !a.marks,
+  );
+  const completedAssignments = assignmentsList.filter(
+    (a) => a.grade || a.marks,
+  );
 
   return (
     <div className="px-2 py-5 mr-2">
@@ -89,29 +57,39 @@ export default function AssignmentsPage() {
         )}
       </div>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
-          <h2 className="text-lg">Pending</h2>
-          <div className="flex gap-2 mt-1 mb-2">
-            {assignmentsList
-              .filter((cls) => cls.due)
-              .map((cls) => (
-                <AssignmentCard key={cls.id} {...cls} />
-              ))}
-          </div>
+      {/* Upcoming Assignments */}
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h2 className="text-lg flex items-center gap-2">
+            Upcoming
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span className="text-muted-foreground">
+              {upcomingAssignments.length}
+            </span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {upcomingAssignments.map((assignment) => (
+            <AssignmentCard key={assignment.id} {...assignment} />
+          ))}
         </div>
       </section>
 
-      <section className="rounded-lg bg-sidebar px-4 py-2 mt-4">
-        <div>
-          <h2 className="text-lg">Completed</h2>
-          <div className="flex gap-2 mt-1 mb-2">
-            {assignmentsList
-              .filter((cls) => cls.grade || cls.marks)
-              .map((cls) => (
-                <AssignmentCard key={cls.id} {...cls} />
-              ))}
-          </div>
+      {/* Completed Assignments */}
+      <section className="rounded-lg bg-sidebar px-4 sm:px-5 pb-4 sm:pb-5 pt-2.5 sm:pt-3 mt-4">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h2 className="text-lg flex items-center gap-2">
+            Completed
+            <span className="w-1 h-1 bg-muted-foreground rounded-full inline-block" />
+            <span className="text-muted-foreground">
+              {completedAssignments.length}
+            </span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {completedAssignments.map((assignment) => (
+            <AssignmentCard key={assignment.id} {...assignment} />
+          ))}
         </div>
       </section>
 
