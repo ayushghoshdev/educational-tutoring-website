@@ -336,7 +336,13 @@ function formatTimetableTitle(startDate: Date, endDate: Date): string {
   return `${startMonth} ${startDay}, ${startYear} – ${endMonth} ${endDay}, ${endYear}`;
 }
 
-// Monotone card for all events (classes, exams, assignments) using the palette color
+// Color-coded card for all events (classes, exams, assignments) using theme tokens
+const EVENT_CARD_STYLES: Record<ScheduleEventType, string> = {
+  class: "bg-class-card hover:bg-class-card-hover",
+  exam: "bg-exam-card hover:bg-exam-card-hover",
+  assignment: "bg-assignment-card hover:bg-assignment-card-hover",
+};
+
 function TimetableEventCard({
   event,
   hourHeight = 70,
@@ -389,17 +395,23 @@ function TimetableEventCard({
         height: `${height}px`,
       }}
       className={cn(
-        "absolute inset-x-1.5 sm:inset-x-2 rounded-lg px-3 py-2",
-        "flex flex-col justify-center transition-colors duration-150 cursor-pointer",
-        "bg-accent/65 hover:bg-accent text-foreground select-none z-10",
+        "absolute inset-x-1.5 sm:inset-x-2 rounded-lg overflow-hidden",
+        "bg-sidebar text-foreground select-none z-10 cursor-pointer",
         "focus-visible:outline-hidden",
       )}
     >
-      <div className="font-medium text-xs sm:text-[13px] leading-tight truncate">
-        {event.title}
-      </div>
-      <div className="text-[10px] sm:text-[11px] font-normal text-muted-foreground leading-tight mt-1 truncate">
-        {timeSubtext}
+      <div
+        className={cn(
+          "h-full w-full px-3 py-2 flex flex-col justify-center transition-colors duration-150",
+          EVENT_CARD_STYLES[event.type],
+        )}
+      >
+        <div className="font-medium text-xs sm:text-[13px] leading-tight truncate">
+          {event.title}
+        </div>
+        <div className="text-[10px] sm:text-[11px] font-normal text-muted-foreground leading-tight mt-1 truncate">
+          {timeSubtext}
+        </div>
       </div>
     </div>
   );
@@ -528,7 +540,7 @@ export default function TimeTablePage() {
   const totalGridHeight = HOURS.length * HOUR_HEIGHT;
 
   return (
-    <div className="h-[calc(100dvh+4px)] max-h-[calc(100dvh+4px)] flex flex-col px-2 py-5 mr-2 overflow-hidden space-y-3 box-border">
+    <div className="h-dvh max-h-dvh flex flex-col px-2 pt-5 pb-4 mr-2 overflow-hidden space-y-3 box-border">
       <div className="shrink-0">
         <h1 className="font-medium text-[26px] tracking-tight text-muted-foreground">
           Your <span className="text-foreground/90">Time Table</span>
